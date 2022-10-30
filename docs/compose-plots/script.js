@@ -95,7 +95,12 @@ title = pn.pane.Markdown(
 """,
     width=800,
 )
-
+image = pn.pane.image.PNG(
+    'https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/image.png',
+    alt_text='Meme Logo',
+    link_url='https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/image.png',
+    width=500
+)
 welcome = pn.pane.Markdown(
     """
 ### This dashboard presents a visual analysis of hospital data for a demo to UCBerkley FinTech Bootcamp students in \`Firas Obeid's\` classes
@@ -107,7 +112,7 @@ welcome = pn.pane.Markdown(
 )
 # Create a tab layout for the dashboard
 tabs = pn.Tabs(
-    ("Welcome", pn.Column(welcome)),
+    ("Welcome", pn.Column(welcome, image)),
     ("total_payments_by_state", pn.Row(plot1)),
     ("sorted_total_payments_by_state", pn.Row(plot2)),
     ("Tab1 + Tab2", pn.Column(plot3,width=960)),
