@@ -42,7 +42,7 @@ import hvplot.pandas
 
 # Read the the ny_places_interest.csv file into a DataFrame
 places_of_interest = pd.read_csv(
-    './Resources/nyc_excursion_plans.csv'
+    'Resources/nyc_excursion_plans.csv'
 ).dropna()
 
 arrival_and_first_location = places_of_interest[
