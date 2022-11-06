@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Feature Distribution &amp; Statistics</title>
+<link rel="icon" href="https://panel.holoviz.org/_static/icons/favicon.ico" type=""><meta name="name" content="Feature Distribution & Statistics">    <link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/css/alerts.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/css/card.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/css/dataframe.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/css/debugger.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/css/json.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/css/loading.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/css/markdown.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/css/widgets.css" type="text/css" />
+    <style>
+        
+    .bk.pn-loading.arc:before {
+      background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHN0eWxlPSJtYXJnaW46IGF1dG87IGJhY2tncm91bmQ6IG5vbmU7IGRpc3BsYXk6IGJsb2NrOyBzaGFwZS1yZW5kZXJpbmc6IGF1dG87IiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ieE1pZFlNaWQiPiAgPGNpcmNsZSBjeD0iNTAiIGN5PSI1MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzNjM2MzIiBzdHJva2Utd2lkdGg9IjEwIiByPSIzNSIgc3Ryb2tlLWRhc2hhcnJheT0iMTY0LjkzMzYxNDMxMzQ2NDE1IDU2Ljk3Nzg3MTQzNzgyMTM4Ij4gICAgPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIHJlcGVhdENvdW50PSJpbmRlZmluaXRlIiBkdXI9IjFzIiB2YWx1ZXM9IjAgNTAgNTA7MzYwIDUwIDUwIiBrZXlUaW1lcz0iMDsxIj48L2FuaW1hdGVUcmFuc2Zvcm0+ICA8L2NpcmNsZT48L3N2Zz4=");
+      background-size: auto calc(min(50%, 400px));
+    }
+    
+    </style>
+<script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.3.min.js"></script><script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-gl-2.4.3.min.js"></script><script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-widgets-2.4.3.min.js"></script><script type="text/javascript" src="https://cdn.bokeh.org/bokeh/release/bokeh-tables-2.4.3.min.js"></script><script type="text/javascript" src="https://cdn.holoviz.org/panel/0.14.0/dist/panel.min.js"></script><script type="text/javascript">
+    Bokeh.set_log_level("info");
+</script><!-- Template CSS -->
+<link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/fastbasetemplate/fast_root.css">
+<link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/fastbasetemplate/fast_bokeh.css">
+<link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/fastbasetemplate/fast_bokeh_slickgrid.css">
+<link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/fastbasetemplate/fast_panel.css">
+<link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/fastbasetemplate/fast_panel_dataframe.css">
+<link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/fastbasetemplate/fast_panel_widgets.css">
+<link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/fastbasetemplate/fast_panel_markdown.css">
+<link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/fastbasetemplate/fast_awesome.css">
+<link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/fastlisttemplate/fast_list_template.css">
+<link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/fastdefaulttheme/fast_root_default.css">
+<link rel="stylesheet" href="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/fastlisttemplate/default.css">
+<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
+
+<style>
+  :root {
+    --body-font: Open Sans, sans-serif;
+  }
+  body {
+    color: #00aa41;
+    background-color: #ffffff;
+    font-family: var(--body-font);
+  }
+  #header a {
+    color: currentColor;
+  }
+  #header-design-provider {
+    --neutral-foreground-rest: #ffffff;
+  }
+  #sidebar {
+    width: 330px;
+  }
+  #header {
+      box-shadow: 2px 2px 10px silver;
+  }
+  #sidebar {
+      box-shadow: 2px 2px 10px silver;
+  }
+</style>
+
+<!-- Template JS -->
+<script src="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/fastbasetemplate/fast_template.js"></script>
+<script src="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/js/@microsoft/fast-colors@5.3.1/dist/index.js" type="module"></script>
+<script src="https://cdn.holoviz.org/panel/0.14.0/dist/bundled/js/@microsoft/fast-components@1.21.8/dist/fast-components.js" type="module"></script>
+
+<!-- Fast Script -->
+<script type="module">
+  import { parseColorHexRGB } from "https://cdn.holoviz.org/panel/0.14.0/dist/bundled/js/@microsoft/fast-colors@5.3.1/dist/index.js";
+  import {
+    createColorPalette,
+    accentFillActiveBehavior,
+    accentFillHoverBehavior,
+    accentFillRestBehavior,
+    accentForegroundActiveBehavior,
+    accentForegroundCutRestBehavior,
+    accentForegroundFocusBehavior,
+    accentForegroundHoverBehavior,
+    accentForegroundRestBehavior,
+    neutralDividerRestBehavior,
+    neutralFillHoverBehavior,
+    neutralFillInputActiveBehavior,
+    neutralFillInputHoverBehavior,
+    neutralFillInputRestBehavior,
+    neutralFillRestBehavior,
+    neutralFillStealthActiveBehavior,
+    neutralFillStealthHoverBehavior,
+    neutralFillStealthRestBehavior,
+    neutralFocusBehavior,
+    neutralFocusInnerAccentBehavior,
+    neutralForegroundActiveBehavior,
+    neutralForegroundHoverBehavior,
+    neutralLayerFloatingBehavior,
+    neutralOutlineActiveBehavior,
+    neutralOutlineHoverBehavior,
+    neutralOutlineRestBehavior
+  } from "https://cdn.holoviz.org/panel/0.14.0/dist/bundled/js/@microsoft/fast-components@1.21.8/dist/fast-components.js";
+
+  function standardize_color(str){
+    var ctx = document.createElement('canvas').getContext('2d');
+    ctx.fillStyle = str;
+    return ctx.fillStyle;
+  }
+
+  function setAccentColor(color, selector){
+      color = standardize_color(color);
+      const accent = color;
+      const palette = createColorPalette(parseColorHexRGB(accent));
+      const provider = document.querySelector(selector);
+      provider.accentBaseColor = accent;
+      provider.accentPalette = palette;
+  }
+  setAccentColor("#0072B5", "#body-design-provider");
+  setAccentColor("#ffffff", "#header-design-provider");
+
+  function setNeutralColor(color, selector){
+      color = standardize_color(color);
+      const palette = createColorPalette(parseColorHexRGB(color));
+      const provider = document.querySelector(selector);
+
+      provider.neutralPalette = palette;
+  }
+  setNeutralColor("#ffffff", "#header-design-provider");
+  setNeutralColor("#000000", "#body-design-provider");
+
+  function setBackgroundColor(color, selector){
+    color = standardize_color(color);
+    const provider = document.querySelector(selector);
+    provider.backgroundColor=color;
+  }
+  setBackgroundColor("#0072B5", "#header-design-provider");
+  setBackgroundColor("#ffffff", "#body-design-provider");
+
+  document.querySelector("#body-design-provider").cornerRadius=3;
+
+  function registerCSSCustomProperties(selector)  {
+    const provider = document.querySelector(selector);
+    provider.registerCSSCustomProperty(accentFillActiveBehavior)
+    provider.registerCSSCustomProperty(neutralFillRestBehavior)
+    provider.registerCSSCustomProperty(accentFillHoverBehavior)
+    provider.registerCSSCustomProperty(accentFillRestBehavior)
+    provider.registerCSSCustomProperty(accentForegroundActiveBehavior)
+    provider.registerCSSCustomProperty(accentForegroundCutRestBehavior)
+    provider.registerCSSCustomProperty(accentForegroundFocusBehavior)
+    provider.registerCSSCustomProperty(accentForegroundHoverBehavior)
+    provider.registerCSSCustomProperty(accentForegroundRestBehavior)
+    provider.registerCSSCustomProperty(neutralDividerRestBehavior)
+    provider.registerCSSCustomProperty(neutralFillHoverBehavior)
+    provider.registerCSSCustomProperty(neutralFillInputActiveBehavior)
+    provider.registerCSSCustomProperty(neutralFillInputHoverBehavior)
+    provider.registerCSSCustomProperty(neutralFillInputRestBehavior)
+    provider.registerCSSCustomProperty(neutralFillRestBehavior)
+    provider.registerCSSCustomProperty(neutralFillStealthActiveBehavior)
+    provider.registerCSSCustomProperty(neutralFillStealthHoverBehavior)
+    provider.registerCSSCustomProperty(neutralFillStealthRestBehavior)
+    provider.registerCSSCustomProperty(neutralFocusBehavior)
+    provider.registerCSSCustomProperty(neutralFocusInnerAccentBehavior)
+    provider.registerCSSCustomProperty(neutralForegroundActiveBehavior)
+    provider.registerCSSCustomProperty(neutralForegroundHoverBehavior)
+    provider.registerCSSCustomProperty(neutralLayerFloatingBehavior)
+    provider.registerCSSCustomProperty(neutralOutlineActiveBehavior)
+    provider.registerCSSCustomProperty(neutralOutlineHoverBehavior)
+    provider.registerCSSCustomProperty(neutralOutlineRestBehavior)
+  }
+  registerCSSCustomProperties("#header-design-provider")
+  registerCSSCustomProperties("#body-design-provider")
+
+  class FastDesignProvider {
+    setAccentColor(value, element){
+      setAccentColor(value, element);
+    }
+    setNeutralColor(value, element){
+      setNeutralColor(value, element);
+    }
+    setBackgroundColor(value, element){
+      setBackgroundColor(value, element)
+    }
+  }
+  window.fastDesignProvider = new FastDesignProvider()
+</script>
+  </head>
+  <body class="bk pn-loading arc">
+<fast-design-system-provider id="body-design-provider" use-defaults accent-foreground-cut-rest="#FFFFFF"
+background-color="#ffffff"accent-base-color="#0072B5"  >
+  <div id="container">
+  <fast-design-system-provider id="header-design-provider"
+background-color="#0072B5"  >
+  <nav id="header">
+    <div class="app-header">
+<a class="title" href="" >Feature Distribution & Statistics</a>    </div>
+    <div id="header-items">
+  </div>
+  <div class="pn-toggle-theme">
+    <fast-switch id="theme-switch" style="float: right;" onChange="toggleLightDarkTheme('default')" checked>
+      <span slot="checked-message">
+        <svg class="theme-toggle-icon" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25"><path d="M0 0h24v24H0z" fill="none"/><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>
+      </span>
+      <span slot="unchecked-message">
+        <svg class="theme-toggle-icon" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25"><path d="M0 0h24v24H0z" fill="none"/><path d="M10 2c-1.82 0-3.53.5-5 1.35C7.99 5.08 10 8.3 10 12s-2.01 6.92-5 8.65C6.47 21.5 8.18 22 10 22c5.52 0 10-4.48 10-10S15.52 2 10 2z"/></svg>
+      </span>
+    </fast-switch>
+    <fast-tooltip anchor="theme-switch" position="bottom">
+      Toggle the Theme
+    </fast-tooltip>
+  </div>
+	<div class="pn-busy-container" id="busy-container">
+	  <div class="bk-root" id="ad7a608d-6e0e-4040-b7b3-6c3a36ff7fa2" data-root-id="1007"></div>
+	</div>
+  <fast-tooltip anchor="busy-container" position="left">
+    Busy Indicator
+  </fast-tooltip>
+
+  </nav>
+  </fast-design-system-provider>
+
+  <div class="row" id="content">
+
+    <div class="main" id="main"
+    style="margin-left: 0px;"
+    >
+      <div class="card-margin">
+<fast-card class="pn-wrapper">        <span class="fullscreen-button" onclick="toggleFullScreen(this)">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 18"><path d="M4.5 11H3v4h4v-1.5H4.5V11zM3 7h1.5V4.5H7V3H3v4zm10.5 6.5H11V15h4v-4h-1.5v2.5zM11 3v1.5h2.5V7H15V3h-4z"/></svg>
+        </span>
+        <div class="bk-root" id="257e12fa-1f6a-4d5d-80fc-431f0ed17645" data-root-id="1008"></div>
+</fast-card>      </div>
+
+      <fast-dialog id="pn-Modal" hidden style="--dialog-width: 80%; --dialog-height: auto; --background-color: var(--neutral-layer-floating);">
+        <fast-button class="pn-modal-close" id="pn-closeModal">&times;</fast-button>
+	<div>
+	</div>
+      </fast-dialog>
+  </div>
+  </div>
+</div>
+</fast-design-system-provider>
+<script>
+  
+</script>
+<script>
+  function openNav() {
+    document.getElementById("sidebar").style.left = 0;
+    document.getElementById("main").style.marginLeft = "360px";
+    document.getElementById("sidebar-button").onclick = closeNav;
+    var interval = setInterval(function () { window.dispatchEvent(new Event('resize')); }, 10);
+    setTimeout(function () { clearInterval(interval) }, 210)
+  }
+
+  function closeNav() {
+    document.getElementById("sidebar").style.left = "-360px";
+    document.getElementById("main").style.marginLeft = 0;
+    document.getElementById("sidebar-button").onclick = openNav;
+    var interval = setInterval(function () { window.dispatchEvent(new Event('resize')); }, 10);
+    setTimeout(function () { clearInterval(interval) }, 210)
+  }
+
+  var modal = document.getElementById("pn-Modal");
+  var span = document.getElementById("pn-closeModal");
+
+  span.onclick = function() {
+    modal.style.display = "none";
+  }
+
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
+</script>
+
+<div class="bk-root" id="9fefb430-c270-44e4-8558-3c6c3fce7159" data-root-id="1004"></div>
+<div class="bk-root" id="52396edf-1fa1-4b99-a6e3-2891134f6269" data-root-id="1006"></div>
+<div class="bk-root" id="d33b398e-90b8-4511-b8f8-2e8ac2f451df" data-root-id="1002"></div>
+
+  
+    <script type="text/javascript">
+      const pyodideWorker = new Worker("./script.js");
+      pyodideWorker.busy = false
+      pyodideWorker.queue = []
+      
+      function send_change(jsdoc, event) {
+        if (event.setter_id != null && event.setter_id == 'py') {
+          return
+        } else if (pyodideWorker.busy && event.model && event.attr) {
+          let events = []
+          for (const old_event of pyodideWorker.queue) {
+            if (!(old_event.model === event.model && old_event.attr === event.attr)) {
+              events.push(old_event)
+            }
+          }
+          events.push(event)
+          pyodideWorker.queue = events
+          return
+        }
+        const patch = jsdoc.create_json_patch_string([event])
+        pyodideWorker.busy = true
+        pyodideWorker.postMessage({type: 'patch', patch: patch})
+      }
+      
+      pyodideWorker.onmessage = async (event) => {
+        const msg = event.data
+      
+        const body = document.getElementsByTagName('body')[0]
+        const loading_msgs = document.getElementsByClassName('pn-loading-msg')
+        if (msg.type === 'idle') {
+          if (pyodideWorker.queue.length) {
+            const patch = pyodideWorker.jsdoc.create_json_patch_string(pyodideWorker.queue)
+            pyodideWorker.busy = true
+            pyodideWorker.queue = []
+            pyodideWorker.postMessage({type: 'patch', patch: patch})
+          } else {
+            pyodideWorker.busy = false
+          }
+        } else if (msg.type === 'status') {
+          let loading_msg
+          if (loading_msgs.length) {
+            loading_msg = loading_msgs[0]
+          } else if (body.classList.contains('pn-loading')) {
+            loading_msg = document.createElement('div')
+            loading_msg.classList.add('pn-loading-msg')
+            body.appendChild(loading_msg)
+          }
+          if (loading_msg != null) {
+            loading_msg.innerHTML = msg.msg
+          }
+        } else if (msg.type === 'render') {
+          const docs_json = JSON.parse(msg.docs_json)
+          const render_items = JSON.parse(msg.render_items)
+          const root_ids = JSON.parse(msg.root_ids)
+      
+          // Remap roots in message to element IDs
+          const root_els = document.getElementsByClassName('bk-root')
+          const data_roots = []
+          for (const el of root_els) {
+             el.innerHTML = ''
+             data_roots.push([parseInt(el.getAttribute('data-root-id')), el.id])
+          }
+          data_roots.sort((a, b) => a[0]<b[0] ? -1: 1)
+          const roots = {}
+          for (let i=0; i<data_roots.length; i++) {
+            roots[root_ids[i]] = data_roots[i][1]
+          }
+          render_items[0]['roots'] = roots
+          render_items[0]['root_ids'] = root_ids
+      
+          // Embed content
+          const [views] = await Bokeh.embed.embed_items(docs_json, render_items)
+      
+          // Remove loading spinner and message
+          body.classList.remove("bk", "pn-loading", "arc")
+          for (const loading_msg of loading_msgs) {
+            loading_msg.remove()
+          }
+      
+          // Setup bi-directional syncing
+          pyodideWorker.jsdoc = jsdoc = views[0].model.document
+          jsdoc.on_change(send_change.bind(null, jsdoc), false)
+          pyodideWorker.postMessage({'type': 'rendered'})
+          pyodideWorker.postMessage({'type': 'location', location: JSON.stringify(window.location)})
+        } else if (msg.type === 'patch') {
+          pyodideWorker.jsdoc.apply_json_patch(JSON.parse(msg.patch), msg.buffers, setter_id='py')
+        }
+      };
+    </script>
+    <script type="application/json" id="1441">
+      {"38520288-a159-48e3-b288-7434c986cbc6":{"defs":[{"extends":null,"module":null,"name":"ReactiveHTML1","overrides":[],"properties":[]},{"extends":null,"module":null,"name":"FlexBox1","overrides":[],"properties":[{"default":"flex-start","kind":null,"name":"align_content"},{"default":"flex-start","kind":null,"name":"align_items"},{"default":"row","kind":null,"name":"flex_direction"},{"default":"wrap","kind":null,"name":"flex_wrap"},{"default":"flex-start","kind":null,"name":"justify_content"}]},{"extends":null,"module":null,"name":"GridStack1","overrides":[],"properties":[{"default":"warn","kind":null,"name":"mode"},{"default":null,"kind":null,"name":"ncols"},{"default":null,"kind":null,"name":"nrows"},{"default":true,"kind":null,"name":"allow_resize"},{"default":true,"kind":null,"name":"allow_drag"},{"default":[],"kind":null,"name":"state"}]},{"extends":null,"module":null,"name":"click1","overrides":[],"properties":[{"default":"","kind":null,"name":"terminal_output"},{"default":"","kind":null,"name":"debug_name"},{"default":0,"kind":null,"name":"clears"}]},{"extends":null,"module":null,"name":"NotificationAreaBase1","overrides":[],"properties":[{"default":"bottom-right","kind":null,"name":"position"},{"default":0,"kind":null,"name":"_clear"}]},{"extends":null,"module":null,"name":"NotificationArea1","overrides":[],"properties":[{"default":[],"kind":null,"name":"notifications"},{"default":"bottom-right","kind":null,"name":"position"},{"default":0,"kind":null,"name":"_clear"},{"default":[{"background":"#ffc107","icon":{"className":"fas fa-exclamation-triangle","color":"white","tagName":"i"},"type":"warning"},{"background":"#007bff","icon":{"className":"fas fa-info-circle","color":"white","tagName":"i"},"type":"info"}],"kind":null,"name":"types"}]},{"extends":null,"module":null,"name":"Notification","overrides":[],"properties":[{"default":null,"kind":null,"name":"background"},{"default":3000,"kind":null,"name":"duration"},{"default":null,"kind":null,"name":"icon"},{"default":"","kind":null,"name":"message"},{"default":null,"kind":null,"name":"notification_type"},{"default":false,"kind":null,"name":"_destroyed"}]},{"extends":null,"module":null,"name":"TemplateActions1","overrides":[],"properties":[{"default":0,"kind":null,"name":"open_modal"},{"default":0,"kind":null,"name":"close_modal"}]},{"extends":null,"module":null,"name":"MaterialTemplateActions1","overrides":[],"properties":[{"default":0,"kind":null,"name":"open_modal"},{"default":0,"kind":null,"name":"close_modal"}]}],"roots":{"references":[{"attributes":{"data":{"A_25_percent":["13.0","5769.0","5.0","0.0"],"A_50_percent":["25.0","10537.0","10.0","0.0"],"A_75_percent":["37.0","15317.0","15.0","1.0"],"count":["100000.0","100000.0","100000.0","100000.0"],"index":["Open_accounts","Income","Years_of_experience","default"],"max":["48.0","19818.0","18.0","1.0"],"mean":["25.0999","10530.8993","9.472","0.4983"],"min":["1.0","1192.0","0.0","0.0"],"std":["14.0613","5494.4023","5.6868","0.5"]},"selected":{"id":"1309"},"selection_policy":{"id":"1362"}},"id":"1308","type":"ColumnDataSource"},{"attributes":{"overlay":{"id":"1048"}},"id":"1046","type":"BoxZoomTool"},{"attributes":{"source":{"id":"1068"}},"id":"1075","type":"CDSView"},{"attributes":{},"id":"1047","type":"ResetTool"},{"attributes":{"angle":{"value":0.0},"fill_alpha":{"value":1.0},"fill_color":{"value":"red"},"hatch_alpha":{"value":1.0},"hatch_color":{"value":"red"},"hatch_scale":{"value":12.0},"hatch_weight":{"value":1.0},"line_alpha":{"value":1.0},"line_cap":{"value":"butt"},"line_color":{"value":"red"},"line_dash":{"value":[]},"line_dash_offset":{"value":0},"line_join":{"value":"bevel"},"line_width":{"value":1},"marker":{"value":"circle"},"size":{"value":5.477225575051661},"x":{"field":"IntervalCuts"},"y":{"field":"Bad_Rate_Pct"}},"id":"1076","type":"Scatter"},{"attributes":{},"id":"1208","type":"StringFormatter"},{"attributes":{"data":{"id":"1005"},"margin":[0,0,0,0],"name":"actions","scripts":{"close_modal":["document.getElementById(&amp;#x27;pn-Modal&amp;#x27;).style.display = &amp;#x27;none&amp;#x27;"],"open_modal":["document.getElementById(&amp;#x27;pn-Modal&amp;#x27;).style.display = &amp;#x27;block&amp;#x27;"]},"subscribed_events":["dom_event"]},"id":"1006","type":"panel.models.reactive_html.ReactiveHTML"},{"attributes":{},"id":"1219","type":"NumberEditor"},{"attributes":{"editor":{"id":"1209"},"field":"IntervalCuts","formatter":{"id":"1208"},"title":"IntervalCuts"},"id":"1210","type":"TableColumn"},{"attributes":{"tools":[{"id":"1023"},{"id":"1024"},{"id":"1043"},{"id":"1044"},{"id":"1045"},{"id":"1046"},{"id":"1047"}]},"id":"1049","type":"Toolbar"},{"attributes":{"format":"0,0.0[00000]"},"id":"1223","type":"NumberFormatter"},{"attributes":{},"id":"1032","type":"CategoricalScale"},{"attributes":{"data":{"Bad_Rate_Pct":{"__ndarray__":"YcPTK2UZ4D+F61G4HoXfPxiV1AloIuA/2V92Tx4W4D+yne+nxkvfP9xGA3gLJOA/lIeFWtO83z9pAG+BBMXfP+hqK/aX3d8/6pWyDHGs3z8BTYQNT6/gPw==","dtype":"float64","order":"little","shape":[11]},"Count_Pct":{"__ndarray__":"W9O84xQduT/UmuYdp+i4P0oMAiuHFrk/1JrmHafouD/2KFyPwvW4PwfwFkhQ/Lg/KH6MuWsJuT9rmnecoiO5Pyh+jLlrCbk/S+oENBE2vD97FK5H4XqEPw==","dtype":"float64","order":"little","shape":[11]},"IntervalCuts":["(1192.0, 3054.6]","(3054.6, 4917.2]","(4917.2, 6779.799999999999]","(6779.799999999999, 8642.4]","(8642.4, 10505.0]","(10505.0, 12367.599999999999]","(12367.599999999999, 14230.199999999999]","(14230.199999999999, 16092.8]","(16092.8, 17955.399999999998]","(17955.399999999998, 19818.0]","Missing_Income"],"feature":["Income","Income","Income","Income","Income","Income","Income","Income","Income","Income","Income"]},"selected":{"id":"1105"},"selection_policy":{"id":"1170"}},"id":"1104","type":"ColumnDataSource"},{"attributes":{"fill_alpha":{"value":0.2},"fill_color":{"value":"red"},"hatch_alpha":{"value":0.2},"hatch_color":{"value":"red"},"line_alpha":{"value":0.2},"line_color":{"value":"red"},"size":{"value":5.477225575051661},"x":{"field":"IntervalCuts"},"y":{"field":"Bad_Rate_Pct"}},"id":"1073","type":"Scatter"},{"attributes":{"data":{"Bad_Rate_Pct":{"__ndarray__":"RwN4CyQo4D9Ra5p3nKLfP4xK6gQ0EeA/zH9Iv30d4D9LyAc9m1XfP3uDL0ymCuA/T0ATYcPT3z82qz5XW7HfP4GVQ4ts598/HOviNhrA3z8AAAAAAAAAAA==","dtype":"float64","order":"little","shape":[11]},"IntervalCuts":["(0.999, 10000.9]","(10000.9, 20000.8]","(20000.8, 30000.7]","(30000.7, 40000.6]","(40000.6, 50000.5]","(50000.5, 60000.4]","(60000.4, 70000.3]","(70000.3, 80000.2]","(80000.2, 90000.1]","(90000.1, 100000.0]","Qcut_Missing_Income"]},"selected":{"id":"1087"},"selection_policy":{"id":"1164"}},"id":"1086","type":"ColumnDataSource"},{"attributes":{"css_classes":["markdown"],"margin":[0,10,0,10],"name":"Markdown00783","text":"&amp;lt;p&amp;gt;Upload a CSV containing  (X) features and  (y) binary variable:&amp;lt;/p&amp;gt;"},"id":"1012","type":"panel.models.markup.HTML"},{"attributes":{"children":[{"id":"1179"},{"id":"1247"}],"margin":[0,0,0,0],"name":"Row01104"},"id":"1020","type":"Row"},{"attributes":{},"id":"1170","type":"UnionRenderers"},{"attributes":{"editor":{"id":"1224"},"field":"Count_Pct","formatter":{"id":"1223"},"title":"Count_Pct"},"id":"1225","type":"TableColumn"},{"attributes":{"fill_alpha":{"value":0.1},"fill_color":{"value":"red"},"hatch_alpha":{"value":0.1},"hatch_color":{"value":"red"},"line_alpha":{"value":0.1},"line_color":{"value":"red"},"size":{"value":5.477225575051661},"x":{"field":"IntervalCuts"},"y":{"field":"Bad_Rate_Pct"}},"id":"1072","type":"Scatter"},{"attributes":{"format":"0,0.0[00000]"},"id":"1198","type":"NumberFormatter"},{"attributes":{},"id":"1224","type":"NumberEditor"},{"attributes":{},"id":"1166","type":"UnionRenderers"},{"attributes":{"name":"TemplateActions01067"},"id":"1005","type":"TemplateActions1"},{"attributes":{"margin":[20,20,20,20],"min_width":250,"options":["Income","Open_accounts","Years_of_experience"],"title":"feature","value":"Income","width":250},"id":"1249","type":"panel.models.widgets.CustomSelect"},{"attributes":{"source":{"id":"1251"}},"id":"1305","type":"CDSView"},{"attributes":{"margin":[5,10,5,10],"options":["Open_accounts","Income","Years_of_experience","default"],"title":"Select Target Variable","value":["Open_accounts","Income","Years_of_experience","default"]},"id":"1014","type":"MultiSelect"},{"attributes":{"background_fill_color":"#ffffff","below":[{"id":"1036"}],"border_fill_alpha":0,"border_fill_color":"#F7F7F7","center":[{"id":"1038"},{"id":"1042"}],"height":500,"left":[{"id":"1039"}],"margin":null,"min_border_bottom":10,"min_border_left":10,"min_border_right":10,"min_border_top":10,"outline_line_alpha":0.5,"outline_line_color":"#888888","outline_line_width":1,"renderers":[{"id":"1074"},{"id":"1083"},{"id":"1092"},{"id":"1101"}],"sizing_mode":"fixed","title":{"id":"1028"},"toolbar":{"id":"1049"},"toolbar_location":null,"width":1000,"x_range":{"id":"1021"},"x_scale":{"id":"1032"},"y_range":{"id":"1022"},"y_scale":{"id":"1034"}},"id":"1027","subtype":"Figure","type":"Plot"},{"attributes":{"children":[[{"id":"1027"},0,0],[{"id":"1126"},0,1],[{"id":"1151"},0,2]]},"id":"1174","type":"GridBox"},{"attributes":{},"id":"1034","type":"LinearScale"},{"attributes":{"coordinates":null,"group":null,"text":"Features Segments Cuts &amp; Q_Cuts by Count","text_color":"#2B2B2B","text_font":"Open Sans, sans-serif","text_font_size":"1.15em"},"id":"1028","type":"Title"},{"attributes":{"style":{"white-space":"nowrap"},"text":"&lt;span style=\"color:#2B2B2B;font-family:Open Sans, sans-serif;font-style:bold;font-weight:bold;font-size:1.725em\"&gt;Summary Statistics of the Data&lt;/span&gt;","width":450},"id":"1306","type":"Div"},{"attributes":{"editor":{"id":"1219"},"field":"Bad_Rate_Pct","formatter":{"id":"1218"},"title":"Bad_Rate_Pct"},"id":"1220","type":"TableColumn"},{"attributes":{},"id":"1172","type":"UnionRenderers"},{"attributes":{"height":0,"margin":[0,0,0,0],"name":"js_area","sizing_mode":"fixed","width":0},"id":"1004","type":"panel.models.markup.HTML"},{"attributes":{"icon":null,"label":"Run Analysis","margin":[5,10,5,10],"subscribed_events":["button_click"]},"id":"1015","type":"Button"},{"attributes":{"children":[{"id":"1249"}],"css_classes":["panel-widget-box"],"margin":[5,5,5,5],"name":"WidgetBox01105"},"id":"1248","type":"Column"},{"attributes":{"fill_alpha":{"value":0.3},"fill_color":{"value":"#30a2da"},"hatch_alpha":{"value":0.1},"hatch_color":{"value":"#30a2da"},"line_alpha":{"value":0.3},"top":{"field":"Count_Pct"},"width":{"value":0.8},"x":{"field":"IntervalCuts"}},"id":"1081","type":"VBar"},{"attributes":{},"id":"1311","type":"StringEditor"},{"attributes":{},"id":"1063","type":"AllLabels"},{"attributes":{},"id":"1069","type":"Selection"},{"attributes":{},"id":"1309","type":"Selection"},{"attributes":{"fill_color":{"value":"red"},"hatch_color":{"value":"red"},"line_color":{"value":"red"},"size":{"value":5.477225575051661},"x":{"field":"IntervalCuts"},"y":{"field":"Bad_Rate_Pct"}},"id":"1089","type":"Scatter"},{"attributes":{"children":[{"id":"1019"},{"id":"1020"},{"id":"1367"}],"margin":[0,0,0,0],"name":"Column01117"},"id":"1018","type":"Column"},{"attributes":{"columns":[{"id":"1312"},{"id":"1317"},{"id":"1322"},{"id":"1327"},{"id":"1332"},{"id":"1337"},{"id":"1342"},{"id":"1347"},{"id":"1352"}],"fit_columns":true,"height":500,"reorderable":false,"source":{"id":"1308"},"view":{"id":"1357"},"width":1000},"id":"1355","type":"DataTable"},{"attributes":{"children":[{"id":"1018"}],"margin":[0,0,0,0],"name":"Row00792"},"id":"1017","type":"Row"},{"attributes":{},"id":"1310","type":"StringFormatter"},{"attributes":{"editor":{"id":"1311"},"field":"index","formatter":{"id":"1310"},"title":"index"},"id":"1312","type":"TableColumn"},{"attributes":{},"id":"1096","type":"Selection"},{"attributes":{"factors":["(1192.0, 3054.6]","(3054.6, 4917.2]","(4917.2, 6779.799999999999]","(6779.799999999999, 8642.4]","(8642.4, 10505.0]","(10505.0, 12367.599999999999]","(12367.599999999999, 14230.199999999999]","(14230.199999999999, 16092.8]","(16092.8, 17955.399999999998]","(17955.399999999998, 19818.0]","Missing_Income","(0.999, 10000.9]","(10000.9, 20000.8]","(20000.8, 30000.7]","(30000.7, 40000.6]","(40000.6, 50000.5]","(50000.5, 60000.4]","(60000.4, 70000.3]","(70000.3, 80000.2]","(80000.2, 90000.1]","(90000.1, 100000.0]","Qcut_Missing_Income"],"tags":[[["IntervalCuts","IntervalCuts",null]]]},"id":"1021","type":"FactorRange"},{"attributes":{},"id":"1315","type":"StringFormatter"},{"attributes":{},"id":"1193","type":"StringFormatter"},{"attributes":{"coordinates":null,"data_source":{"id":"1068"},"glyph":{"id":"1071"},"group":null,"hover_glyph":null,"muted_glyph":{"id":"1073"},"nonselection_glyph":{"id":"1072"},"selection_glyph":{"id":"1076"},"view":{"id":"1075"}},"id":"1074","type":"GlyphRenderer"},{"attributes":{"editor":{"id":"1189"},"field":"IntervalCuts","formatter":{"id":"1188"},"title":"IntervalCuts"},"id":"1190","type":"TableColumn"},{"attributes":{},"id":"1316","type":"StringEditor"},{"attributes":{"editor":{"id":"1316"},"field":"count","formatter":{"id":"1315"},"title":"count"},"id":"1317","type":"TableColumn"},{"attributes":{"coordinates":null,"data_source":{"id":"1077"},"glyph":{"id":"1080"},"group":null,"hover_glyph":null,"muted_glyph":{"id":"1082"},"nonselection_glyph":{"id":"1081"},"selection_glyph":{"id":"1085"},"view":{"id":"1084"}},"id":"1083","type":"GlyphRenderer"},{"attributes":{"children":[{"id":"1178"},{"id":"1177"}]},"id":"1179","type":"Column"},{"attributes":{},"id":"1259","type":"StringEditor"},{"attributes":{},"id":"1321","type":"StringEditor"},{"attributes":{"editor":{"id":"1259"},"field":"count","formatter":{"id":"1258"},"title":"count"},"id":"1260","type":"TableColumn"},{"attributes":{},"id":"1263","type":"StringFormatter"},{"attributes":{},"id":"1320","type":"StringFormatter"},{"attributes":{},"id":"1264","type":"StringEditor"},{"attributes":{},"id":"1326","type":"StringEditor"},{"attributes":{"data":{"Count_Pct":{"__ndarray__":"mpmZmZmZuT+amZmZmZm5P5qZmZmZmbk/mpmZmZmZuT+amZmZmZm5P5qZmZmZmbk/mpmZmZmZuT+amZmZmZm5P5qZmZmZmbk/mpmZmZmZuT8AAAAAAAAAAA==","dtype":"float64","order":"little","shape":[11]},"IntervalCuts":["(0.999, 10000.9]","(10000.9, 20000.8]","(20000.8, 30000.7]","(30000.7, 40000.6]","(40000.6, 50000.5]","(50000.5, 60000.4]","(60000.4, 70000.3]","(70000.3, 80000.2]","(80000.2, 90000.1]","(90000.1, 100000.0]","Qcut_Missing_Income"]},"selected":{"id":"1096"},"selection_policy":{"id":"1166"}},"id":"1095","type":"ColumnDataSource"},{"attributes":{"editor":{"id":"1321"},"field":"mean","formatter":{"id":"1320"},"title":"mean"},"id":"1322","type":"TableColumn"},{"attributes":{},"id":"1199","type":"NumberEditor"},{"attributes":{},"id":"1325","type":"StringFormatter"},{"attributes":{},"id":"1060","type":"AllLabels"},{"attributes":{},"id":"1059","type":"CategoricalTickFormatter"},{"attributes":{},"id":"1269","type":"StringEditor"},{"attributes":{"editor":{"id":"1264"},"field":"mean","formatter":{"id":"1263"},"title":"mean"},"id":"1265","type":"TableColumn"},{"attributes":{},"id":"1130","type":"Selection"},{"attributes":{},"id":"1268","type":"StringFormatter"},{"attributes":{},"id":"1331","type":"StringEditor"},{"attributes":{"align":"center","margin":[5,10,5,10]},"id":"1013","type":"FileInput"},{"attributes":{"editor":{"id":"1326"},"field":"std","formatter":{"id":"1325"},"title":"std"},"id":"1327","type":"TableColumn"},{"attributes":{"name":"location","reload":false},"id":"1002","type":"panel.models.location.Location"},{"attributes":{},"id":"1330","type":"StringFormatter"},{"attributes":{"source":{"id":"1086"}},"id":"1093","type":"CDSView"},{"attributes":{"children":[{"id":"1248"},{"id":"1250"}],"margin":[0,0,0,0],"name":"Column01111"},"id":"1247","type":"Column"},{"attributes":{},"id":"1274","type":"StringEditor"},{"attributes":{"editor":{"id":"1269"},"field":"std","formatter":{"id":"1268"},"title":"std"},"id":"1270","type":"TableColumn"},{"attributes":{"source":{"id":"1104"}},"id":"1128","type":"CDSView"},{"attributes":{"children":[{"id":"1010"}],"margin":[0,0,0,0],"name":"Column00786"},"id":"1009","type":"Column"},{"attributes":{"editor":{"id":"1194"},"field":"feature","formatter":{"id":"1193"},"title":"feature"},"id":"1195","type":"TableColumn"},{"attributes":{},"id":"1273","type":"StringFormatter"},{"attributes":{},"id":"1335","type":"StringFormatter"},{"attributes":{"editor":{"id":"1331"},"field":"min","formatter":{"id":"1330"},"title":"min"},"id":"1332","type":"TableColumn"},{"attributes":{},"id":"1188","type":"StringFormatter"},{"attributes":{},"id":"1209","type":"StringEditor"},{"attributes":{"style":{"white-space":"nowrap"},"text":"&lt;span style=\"color:#2B2B2B;font-family:Open Sans, sans-serif;font-style:bold;font-weight:bold;font-size:1.725em\"&gt;Summary Statistics of the Capped Outliers Data&lt;/span&gt;","width":450},"id":"1358","type":"Div"},{"attributes":{"end":0.5735399999999999,"reset_end":0.5735399999999999,"reset_start":0.0,"tags":[[["Bad_Rate_Pct","Bad_Rate_Pct",null]]]},"id":"1022","type":"Range1d"},{"attributes":{},"id":"1045","type":"WheelZoomTool"},{"attributes":{"fill_alpha":{"value":0.1},"fill_color":{"value":"red"},"hatch_alpha":{"value":0.1},"hatch_color":{"value":"red"},"line_alpha":{"value":0.1},"line_color":{"value":"red"},"size":{"value":5.477225575051661},"x":{"field":"IntervalCuts"},"y":{"field":"Bad_Rate_Pct"}},"id":"1090","type":"Scatter"},{"attributes":{"format":"0,0.0[00000]"},"id":"1203","type":"NumberFormatter"},{"attributes":{"margin":[5,5,5,5],"name":"VSpacer01110","sizing_mode":"stretch_height"},"id":"1250","type":"Spacer"},{"attributes":{"toolbar":{"id":"1175"},"toolbar_location":"above"},"id":"1176","type":"ToolbarBox"},{"attributes":{},"id":"1278","type":"StringFormatter"},{"attributes":{},"id":"1340","type":"StringFormatter"},{"attributes":{"editor":{"id":"1274"},"field":"min","formatter":{"id":"1273"},"title":"min"},"id":"1275","type":"TableColumn"},{"attributes":{"callback":null,"renderers":[{"id":"1074"},{"id":"1092"}],"tags":["hv_created"],"tooltips":[["IntervalCuts","@{IntervalCuts}"],["Bad_Rate_Pct","@{Bad_Rate_Pct}"]]},"id":"1023","type":"HoverTool"},{"attributes":{"children":[{"id":"1176"},{"id":"1174"}]},"id":"1177","type":"Column"},{"attributes":{},"id":"1298","type":"StringFormatter"},{"attributes":{"axis":{"id":"1036"},"coordinates":null,"grid_line_alpha":0.25,"grid_line_color":"#888888","group":null,"ticker":{"id":"1037"}},"id":"1038","type":"Grid"},{"attributes":{},"id":"1336","type":"StringEditor"},{"attributes":{},"id":"1078","type":"Selection"},{"attributes":{"editor":{"id":"1336"},"field":"A_25_percent","formatter":{"id":"1335"},"title":"25%"},"id":"1337","type":"TableColumn"},{"attributes":{},"id":"1283","type":"StringFormatter"},{"attributes":{"style":{"white-space":"nowrap"},"text":"&lt;span style=\"color:#2B2B2B;font-family:Open Sans, sans-serif;font-style:bold;font-weight:bold;font-size:1.4em\"&gt;feature: Income&lt;/span&gt;","width":450},"id":"1178","type":"Div"},{"attributes":{},"id":"1341","type":"StringEditor"},{"attributes":{},"id":"1087","type":"Selection"},{"attributes":{"margin":[5,5,5,5],"min_width":20,"name":"Spacer00787","width":20},"id":"1016","type":"Spacer"},{"attributes":{},"id":"1279","type":"StringEditor"},{"attributes":{},"id":"1213","type":"StringFormatter"},{"attributes":{"editor":{"id":"1279"},"field":"A_25_percent","formatter":{"id":"1278"},"title":"25%"},"id":"1280","type":"TableColumn"},{"attributes":{"axis_label":"Intervals(Bins)","axis_label_standoff":10,"axis_label_text_color":"#2B2B2B","axis_label_text_font":"Open Sans, sans-serif","axis_label_text_font_size":"1.25em","axis_label_text_font_style":"normal","axis_line_alpha":0.1,"axis_line_color":"#2B2B2B","coordinates":null,"formatter":{"id":"1059"},"group":null,"group_text_color":"#2B2B2B","group_text_font":"Open Sans, sans-serif","major_label_orientation":0.7853981633974483,"major_label_policy":{"id":"1060"},"major_label_text_color":"#2B2B2B","major_label_text_font":"Open Sans, sans-serif","major_tick_line_alpha":0.5,"major_tick_line_color":"#2B2B2B","minor_tick_line_alpha":0.25,"minor_tick_line_color":"#2B2B2B","ticker":{"id":"1037"}},"id":"1036","type":"CategoricalAxis"},{"attributes":{},"id":"1284","type":"StringEditor"},{"attributes":{},"id":"1346","type":"StringEditor"},{"attributes":{"callback":null,"renderers":[{"id":"1083"},{"id":"1101"}],"tags":["hv_created"],"tooltips":[["IntervalCuts","@{IntervalCuts}"],["Count_Pct","@{Count_Pct}"]]},"id":"1024","type":"HoverTool"},{"attributes":{"editor":{"id":"1341"},"field":"A_50_percent","formatter":{"id":"1340"},"title":"50%"},"id":"1342","type":"TableColumn"},{"attributes":{},"id":"1345","type":"StringFormatter"},{"attributes":{"fill_color":{"value":"red"},"hatch_color":{"value":"red"},"line_color":{"value":"red"},"size":{"value":5.477225575051661},"x":{"field":"IntervalCuts"},"y":{"field":"Bad_Rate_Pct"}},"id":"1071","type":"Scatter"},{"attributes":{"children":[{"id":"1011"},{"id":"1012"},{"id":"1013"},{"id":"1014"},{"id":"1015"}],"css_classes":["panel-widget-box"],"margin":[5,5,5,5],"name":"WidgetBox00785"},"id":"1010","type":"Column"},{"attributes":{"source":{"id":"1129"}},"id":"1153","type":"CDSView"},{"attributes":{},"id":"1289","type":"StringEditor"},{"attributes":{"source":{"id":"1077"}},"id":"1084","type":"CDSView"},{"attributes":{"editor":{"id":"1284"},"field":"A_50_percent","formatter":{"id":"1283"},"title":"50%"},"id":"1285","type":"TableColumn"},{"attributes":{"coordinates":null,"data_source":{"id":"1095"},"glyph":{"id":"1098"},"group":null,"hover_glyph":null,"muted_glyph":{"id":"1100"},"nonselection_glyph":{"id":"1099"},"selection_glyph":{"id":"1103"},"view":{"id":"1102"}},"id":"1101","type":"GlyphRenderer"},{"attributes":{},"id":"1288","type":"StringFormatter"},{"attributes":{},"id":"1351","type":"StringEditor"},{"attributes":{"fill_alpha":{"value":0.3},"fill_color":{"value":"#30a2da"},"hatch_alpha":{"value":0.3},"hatch_color":{"value":"#30a2da"},"line_alpha":{"value":0.3},"top":{"field":"Count_Pct"},"width":{"value":0.8},"x":{"field":"IntervalCuts"}},"id":"1080","type":"VBar"},{"attributes":{"editor":{"id":"1346"},"field":"A_75_percent","formatter":{"id":"1345"},"title":"75%"},"id":"1347","type":"TableColumn"},{"attributes":{"data":{"Count_Pct":{"__ndarray__":"W9O84xQduT/UmuYdp+i4P0oMAiuHFrk/1JrmHafouD/2KFyPwvW4PwfwFkhQ/Lg/KH6MuWsJuT9rmnecoiO5Pyh+jLlrCbk/S+oENBE2vD97FK5H4XqEPw==","dtype":"float64","order":"little","shape":[11]},"IntervalCuts":["(1192.0, 3054.6]","(3054.6, 4917.2]","(4917.2, 6779.799999999999]","(6779.799999999999, 8642.4]","(8642.4, 10505.0]","(10505.0, 12367.599999999999]","(12367.599999999999, 14230.199999999999]","(14230.199999999999, 16092.8]","(16092.8, 17955.399999999998]","(17955.399999999998, 19818.0]","Missing_Income"]},"selected":{"id":"1078"},"selection_policy":{"id":"1162"}},"id":"1077","type":"ColumnDataSource"},{"attributes":{"fill_alpha":{"value":0.2},"fill_color":{"value":"#fc4f30"},"hatch_alpha":{"value":0.2},"hatch_color":{"value":"#fc4f30"},"line_alpha":{"value":0.2},"top":{"field":"Count_Pct"},"width":{"value":0.8},"x":{"field":"IntervalCuts"}},"id":"1100","type":"VBar"},{"attributes":{"columns":[{"id":"1190"},{"id":"1195"},{"id":"1200"},{"id":"1205"}],"height":300,"reorderable":false,"source":{"id":"1104"},"view":{"id":"1128"},"width":400},"id":"1126","type":"DataTable"},{"attributes":{},"id":"1350","type":"StringFormatter"},{"attributes":{},"id":"1160","type":"UnionRenderers"},{"attributes":{"children":[{"id":"1009"},{"id":"1016"},{"id":"1017"}],"margin":[0,0,0,0],"name":"1706753190792","tags":["main"]},"id":"1008","type":"Row"},{"attributes":{},"id":"1294","type":"StringEditor"},{"attributes":{"bottom_units":"screen","coordinates":null,"fill_alpha":0.5,"fill_color":"lightgrey","group":null,"left_units":"screen","level":"overlay","line_alpha":1.0,"line_color":"black","line_dash":[4,4],"line_width":2,"right_units":"screen","syncable":false,"top_units":"screen"},"id":"1048","type":"BoxAnnotation"},{"attributes":{"data":{"Bad_Rate_Pct":{"__ndarray__":"YcPTK2UZ4D+F61G4HoXfPxiV1AloIuA/2V92Tx4W4D+yne+nxkvfP9xGA3gLJOA/lIeFWtO83z9pAG+BBMXfP+hqK/aX3d8/6pWyDHGs3z8BTYQNT6/gPw==","dtype":"float64","order":"little","shape":[11]},"IntervalCuts":["(1192.0, 3054.6]","(3054.6, 4917.2]","(4917.2, 6779.799999999999]","(6779.799999999999, 8642.4]","(8642.4, 10505.0]","(10505.0, 12367.599999999999]","(12367.599999999999, 14230.199999999999]","(14230.199999999999, 16092.8]","(16092.8, 17955.399999999998]","(17955.399999999998, 19818.0]","Missing_Income"]},"selected":{"id":"1069"},"selection_policy":{"id":"1160"}},"id":"1068","type":"ColumnDataSource"},{"attributes":{},"id":"1037","type":"CategoricalTicker"},{"attributes":{"children":[[{"id":"1307"},0,0],[{"id":"1359"},0,1]]},"id":"1364","type":"GridBox"},{"attributes":{"editor":{"id":"1289"},"field":"A_75_percent","formatter":{"id":"1288"},"title":"75%"},"id":"1290","type":"TableColumn"},{"attributes":{"angle":{"value":0.0},"fill_alpha":{"value":1.0},"fill_color":{"value":"red"},"hatch_alpha":{"value":1.0},"hatch_color":{"value":"red"},"hatch_scale":{"value":12.0},"hatch_weight":{"value":1.0},"line_alpha":{"value":1.0},"line_cap":{"value":"butt"},"line_color":{"value":"red"},"line_dash":{"value":[]},"line_dash_offset":{"value":0},"line_join":{"value":"bevel"},"line_width":{"value":1},"marker":{"value":"circle"},"size":{"value":5.477225575051661},"x":{"field":"IntervalCuts"},"y":{"field":"Bad_Rate_Pct"}},"id":"1094","type":"Scatter"},{"attributes":{"source":{"id":"1095"}},"id":"1102","type":"CDSView"},{"attributes":{"css_classes":["markdown"],"margin":[0,10,0,10],"name":"Markdown00781","text":"&amp;lt;h1&amp;gt;Feature Distribution and Stats&amp;lt;/h1&amp;gt;\n&amp;lt;p&amp;gt;This tool performs feature binning by equal intervals and by equal pouplations in each interval vs bad rate\nTo get the feature deep dive feature distribution:&amp;lt;/p&amp;gt;\n&amp;lt;ol&amp;gt;\n&amp;lt;li&amp;gt;\n&amp;lt;p&amp;gt;Upload a CSV (only numerical data)&amp;lt;/p&amp;gt;\n&amp;lt;/li&amp;gt;\n&amp;lt;li&amp;gt;\n&amp;lt;p&amp;gt;Choose &amp;amp;amp; press on the binary target column in the &amp;lt;code&amp;gt;Select Target Variable\nAge&amp;lt;/code&amp;gt; section&amp;lt;/p&amp;gt;\n&amp;lt;/li&amp;gt;\n&amp;lt;li&amp;gt;\n&amp;lt;p&amp;gt;Press Run Analysis&amp;lt;/p&amp;gt;\n&amp;lt;/li&amp;gt;\n&amp;lt;li&amp;gt;\n&amp;lt;p&amp;gt;Wait few seconds and analyze the updated charts&amp;lt;/p&amp;gt;\n&amp;lt;/li&amp;gt;\n&amp;lt;/ol&amp;gt;"},"id":"1011","type":"panel.models.markup.HTML"},{"attributes":{"source":{"id":"1308"}},"id":"1357","type":"CDSView"},{"attributes":{},"id":"1293","type":"StringFormatter"},{"attributes":{},"id":"1040","type":"BasicTicker"},{"attributes":{"editor":{"id":"1351"},"field":"max","formatter":{"id":"1350"},"title":"max"},"id":"1352","type":"TableColumn"},{"attributes":{"fill_alpha":{"value":0.2},"fill_color":{"value":"red"},"hatch_alpha":{"value":0.2},"hatch_color":{"value":"red"},"line_alpha":{"value":0.2},"line_color":{"value":"red"},"size":{"value":5.477225575051661},"x":{"field":"IntervalCuts"},"y":{"field":"Bad_Rate_Pct"}},"id":"1091","type":"Scatter"},{"attributes":{"fill_alpha":{"value":0.3},"fill_color":{"value":"#fc4f30"},"hatch_alpha":{"value":0.1},"hatch_color":{"value":"#fc4f30"},"line_alpha":{"value":0.3},"top":{"field":"Count_Pct"},"width":{"value":0.8},"x":{"field":"IntervalCuts"}},"id":"1099","type":"VBar"},{"attributes":{"format":"%.04f"},"id":"1057","type":"PrintfTickFormatter"},{"attributes":{"toolbar":{"id":"1365"},"toolbar_location":"above"},"id":"1366","type":"ToolbarBox"},{"attributes":{"data":{"Bad_Rate_Pct":{"__ndarray__":"RwN4CyQo4D9Ra5p3nKLfP4xK6gQ0EeA/zH9Iv30d4D9LyAc9m1XfP3uDL0ymCuA/T0ATYcPT3z82qz5XW7HfP4GVQ4ts598/HOviNhrA3z8AAAAAAAAAAA==","dtype":"float64","order":"little","shape":[11]},"Count_Pct":{"__ndarray__":"mpmZmZmZuT+amZmZmZm5P5qZmZmZmbk/mpmZmZmZuT+amZmZmZm5P5qZmZmZmbk/mpmZmZmZuT+amZmZmZm5P5qZmZmZmbk/mpmZmZmZuT8AAAAAAAAAAA==","dtype":"float64","order":"little","shape":[11]},"IntervalCuts":["(0.999, 10000.9]","(10000.9, 20000.8]","(20000.8, 30000.7]","(30000.7, 40000.6]","(40000.6, 50000.5]","(50000.5, 60000.4]","(60000.4, 70000.3]","(70000.3, 80000.2]","(80000.2, 90000.1]","(90000.1, 100000.0]","Qcut_Missing_Income"],"feature":["Income","Income","Income","Income","Income","Income","Income","Income","Income","Income","Income"]},"selected":{"id":"1130"},"selection_policy":{"id":"1172"}},"id":"1129","type":"ColumnDataSource"},{"attributes":{"bottom":{"value":0},"fill_alpha":{"value":0.3},"fill_color":{"value":"#30a2da"},"hatch_alpha":{"value":0.3},"hatch_color":{"value":"#30a2da"},"hatch_scale":{"value":12.0},"hatch_weight":{"value":1.0},"line_alpha":{"value":0.3},"line_cap":{"value":"butt"},"line_color":{"value":"black"},"line_dash":{"value":[]},"line_dash_offset":{"value":0},"line_join":{"value":"bevel"},"line_width":{"value":1},"top":{"field":"Count_Pct"},"width":{"value":0.8},"x":{"field":"IntervalCuts"}},"id":"1085","type":"VBar"},{"attributes":{},"id":"1162","type":"UnionRenderers"},{"attributes":{"children":[{"id":"1358"},{"id":"1355"}]},"id":"1359","type":"Column"},{"attributes":{"editor":{"id":"1299"},"field":"Missing_Values_left_parenthesis_percent_right_parenthesis","formatter":{"id":"1298"},"title":"Missing_Values(%)"},"id":"1300","type":"TableColumn"},{"attributes":{"axis":{"id":"1039"},"coordinates":null,"dimension":1,"grid_line_alpha":0.25,"grid_line_color":"#888888","group":null,"ticker":{"id":"1040"}},"id":"1042","type":"Grid"},{"attributes":{"editor":{"id":"1199"},"field":"Bad_Rate_Pct","formatter":{"id":"1198"},"title":"Bad_Rate_Pct"},"id":"1200","type":"TableColumn"},{"attributes":{"css_classes":["markdown"],"margin":[5,5,5,5],"name":"Markdown01086","text":"&amp;lt;h3&amp;gt;Feature Distribution (Bin Count &amp;amp;amp; Bad Rate)&amp;lt;/h3&amp;gt;","width":800},"id":"1019","type":"panel.models.markup.HTML"},{"attributes":{"editor":{"id":"1294"},"field":"max","formatter":{"id":"1293"},"title":"max"},"id":"1295","type":"TableColumn"},{"attributes":{"axis_label":"%Count vs %BadRate","axis_label_standoff":10,"axis_label_text_color":"#2B2B2B","axis_label_text_font":"Open Sans, sans-serif","axis_label_text_font_size":"1.25em","axis_label_text_font_style":"normal","axis_line_alpha":0.1,"axis_line_color":"#2B2B2B","coordinates":null,"formatter":{"id":"1057"},"group":null,"major_label_policy":{"id":"1063"},"major_label_text_color":"#2B2B2B","major_label_text_font":"Open Sans, sans-serif","major_tick_line_alpha":0.5,"major_tick_line_color":"#2B2B2B","minor_tick_line_alpha":0.25,"minor_tick_line_color":"#2B2B2B","ticker":{"id":"1040"}},"id":"1039","type":"LinearAxis"},{"attributes":{},"id":"1299","type":"StringEditor"},{"attributes":{},"id":"1362","type":"UnionRenderers"},{"attributes":{"fill_alpha":{"value":0.3},"fill_color":{"value":"#fc4f30"},"hatch_alpha":{"value":0.3},"hatch_color":{"value":"#fc4f30"},"line_alpha":{"value":0.3},"top":{"field":"Count_Pct"},"width":{"value":0.8},"x":{"field":"IntervalCuts"}},"id":"1098","type":"VBar"},{"attributes":{},"id":"1253","type":"StringFormatter"},{"attributes":{"columns":[{"id":"1255"},{"id":"1260"},{"id":"1265"},{"id":"1270"},{"id":"1275"},{"id":"1280"},{"id":"1285"},{"id":"1290"},{"id":"1295"},{"id":"1300"}],"fit_columns":true,"height":500,"reorderable":false,"source":{"id":"1251"},"view":{"id":"1305"},"width":1000},"id":"1303","type":"DataTable"},{"attributes":{},"id":"1194","type":"StringEditor"},{"attributes":{"format":"0,0.0[00000]"},"id":"1218","type":"NumberFormatter"},{"attributes":{},"id":"1365","type":"ProxyToolbar"},{"attributes":{"toolbars":[{"id":"1049"}],"tools":[{"id":"1023"},{"id":"1024"},{"id":"1043"},{"id":"1044"},{"id":"1045"},{"id":"1046"},{"id":"1047"}]},"id":"1175","type":"ProxyToolbar"},{"attributes":{},"id":"1252","type":"Selection"},{"attributes":{"data":{"A_25_percent":["13.0","5769.0","5.0","0.0"],"A_50_percent":["25.0","10537.0","10.0","0.0"],"A_75_percent":["37.0","15317.0","15.0","1.0"],"Missing_Values_left_parenthesis_percent_right_parenthesis":["0.0","0.0","0.0","0.0"],"count":["100000.0","100000.0","100000.0","100000.0"],"index":["Open_accounts","Income","Years_of_experience","default"],"max":["49.0","19999.0","19.0","1.0"],"mean":["25.1206","10530.8832","9.5228","0.4983"],"min":["1.0","1000.0","0.0","0.0"],"std":["14.0957","5497.5555","5.7667","0.5"]},"selected":{"id":"1252"},"selection_policy":{"id":"1360"}},"id":"1251","type":"ColumnDataSource"},{"attributes":{"bottom":{"value":0},"fill_alpha":{"value":0.3},"fill_color":{"value":"#fc4f30"},"hatch_alpha":{"value":0.3},"hatch_color":{"value":"#fc4f30"},"hatch_scale":{"value":12.0},"hatch_weight":{"value":1.0},"line_alpha":{"value":0.3},"line_cap":{"value":"butt"},"line_color":{"value":"black"},"line_dash":{"value":[]},"line_dash_offset":{"value":0},"line_join":{"value":"bevel"},"line_width":{"value":1},"top":{"field":"Count_Pct"},"width":{"value":0.8},"x":{"field":"IntervalCuts"}},"id":"1103","type":"VBar"},{"attributes":{"children":[{"id":"1366"},{"id":"1364"}]},"id":"1367","type":"Column"},{"attributes":{},"id":"1254","type":"StringEditor"},{"attributes":{"fill_alpha":{"value":0.2},"fill_color":{"value":"#30a2da"},"hatch_alpha":{"value":0.2},"hatch_color":{"value":"#30a2da"},"line_alpha":{"value":0.2},"top":{"field":"Count_Pct"},"width":{"value":0.8},"x":{"field":"IntervalCuts"}},"id":"1082","type":"VBar"},{"attributes":{"children":[{"id":"1306"},{"id":"1303"}]},"id":"1307","type":"Column"},{"attributes":{"columns":[{"id":"1210"},{"id":"1215"},{"id":"1220"},{"id":"1225"}],"height":300,"reorderable":false,"source":{"id":"1129"},"view":{"id":"1153"},"width":400},"id":"1151","type":"DataTable"},{"attributes":{"editor":{"id":"1254"},"field":"index","formatter":{"id":"1253"},"title":"index"},"id":"1255","type":"TableColumn"},{"attributes":{},"id":"1043","type":"SaveTool"},{"attributes":{"coordinates":null,"data_source":{"id":"1086"},"glyph":{"id":"1089"},"group":null,"hover_glyph":null,"muted_glyph":{"id":"1091"},"nonselection_glyph":{"id":"1090"},"selection_glyph":{"id":"1094"},"view":{"id":"1093"}},"id":"1092","type":"GlyphRenderer"},{"attributes":{},"id":"1214","type":"StringEditor"},{"attributes":{},"id":"1044","type":"PanTool"},{"attributes":{"editor":{"id":"1204"},"field":"Count_Pct","formatter":{"id":"1203"},"title":"Count_Pct"},"id":"1205","type":"TableColumn"},{"attributes":{},"id":"1164","type":"UnionRenderers"},{"attributes":{"editor":{"id":"1214"},"field":"feature","formatter":{"id":"1213"},"title":"feature"},"id":"1215","type":"TableColumn"},{"attributes":{},"id":"1360","type":"UnionRenderers"},{"attributes":{},"id":"1204","type":"NumberEditor"},{"attributes":{},"id":"1258","type":"StringFormatter"},{"attributes":{},"id":"1189","type":"StringEditor"},{"attributes":{},"id":"1105","type":"Selection"},{"attributes":{"css_classes":["loader","light"],"height":20,"margin":[5,10,5,10],"name":"busy_indicator","sizing_mode":"fixed","width":20},"id":"1007","type":"panel.models.markup.HTML"}],"root_ids":["1002","1004","1006","1007","1008"]},"title":"Feature Distribution &amp; Statistics","version":"2.4.3"}}
+    </script>
+    <script type="text/javascript">
+      (function() {
+        const fn = function() {
+          Bokeh.safely(function() {
+            (function(root) {
+              function embed_document(root) {
+              const docs_json = document.getElementById('1441').textContent;
+              const render_items = [{"docid":"38520288-a159-48e3-b288-7434c986cbc6","root_ids":["1002","1004","1006","1007","1008"],"roots":{"1002":"d33b398e-90b8-4511-b8f8-2e8ac2f451df","1004":"9fefb430-c270-44e4-8558-3c6c3fce7159","1006":"52396edf-1fa1-4b99-a6e3-2891134f6269","1007":"ad7a608d-6e0e-4040-b7b3-6c3a36ff7fa2","1008":"257e12fa-1f6a-4d5d-80fc-431f0ed17645"}}];
+              root.Bokeh.embed.embed_items(docs_json, render_items);
+              }
+              if (root.Bokeh !== undefined) {
+                embed_document(root);
+              } else {
+                let attempts = 0;
+                const timer = setInterval(function(root) {
+                  if (root.Bokeh !== undefined) {
+                    clearInterval(timer);
+                    embed_document(root);
+                  } else {
+                    attempts++;
+                    if (attempts > 100) {
+                      clearInterval(timer);
+                      console.log("Bokeh: ERROR: Unable to run BokehJS code because BokehJS library is missing");
+                    }
+                  }
+                }, 10, root)
+              }
+            })(window);
+          });
+        };
+        if (document.readyState != "loading") fn();
+        else document.addEventListener("DOMContentLoaded", fn);
+      })();
+    </script>
+  </body>
+</html>
