@@ -54,6 +54,8 @@ hv.extension('bokeh')
 
 text = """
 #  Feature Distribution and Stats
+## AUTHOR: \`FIRAS ALI OBEID\`
+
 This tool performs feature binning by equal intervals and by equal pouplations in each interval vs bad rate
 To get the feature deep dive feature distribution:
 
