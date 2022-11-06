@@ -61,8 +61,7 @@ To get the feature deep dive feature distribution:
 
 1. Upload a CSV (only numerical data)
 
-2. Choose & press on the binary target column in the \`Select Target Variable
-Age\` section
+2. Choose & press on the binary (0 / 1) target column in the \`Select Target Variable\` section below
 
 3. Press Run Analysis
 
