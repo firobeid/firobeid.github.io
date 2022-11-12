@@ -244,7 +244,7 @@ def run(_):
     test2_plot = test2.set_index("IntervalCuts").hvplot.scatter(yaxis = "left", y = "Bad_Rate_Pct",
             groupby = "feature", xlabel = "Intervals(Bins)", ylabel = "%Count vs %BadRate",height = 500,
             width = 1000, title = "Features Segments Cuts by Count", legend = True,label = "Bad Rate(%)").opts(xrotation=45, yformatter = "%.04f",show_grid=True, 
-                                                                                        framewise=True, color = "red")
+                                                                                        framewise=True, color = "red", legend_position='top_right')
     test_plot = test.set_index("IntervalCuts").hvplot.bar(y = "Count_Pct",
                 groupby = "feature", xlabel = "Intervals(Bins)", ylabel = "%Count vs %BadRate",height = 500,
                 width = 1000, title = "Features Segments Cuts by Count", legend=True, alpha=0.3, label ="Equal Intervals Data Points(%)").opts(xrotation=45, yformatter = "%.04f",show_grid=True, framewise=True, yaxis='left')
