@@ -100,6 +100,8 @@ def get_data():
         except:
             New_Refit_routing = pd.read_csv(New_Refit_routing, error_bad_lines=False)
         target = None
+        New_Refit_routing = New_Refit_routing.select_dtypes(exclude=['datetime', "category"])
+        New_Refit_routing = New_Refit_routing[[cols for cols in New_Refit_routing.columns if New_Refit_routing[cols].nunique() >= 2]] #remove columns with less then 2 values
     return target, New_Refit_routing
 
 
@@ -152,6 +154,7 @@ def cuts_(target):
     test = test.rename(columns={"index":"IntervalCuts", "column":"feature", "value":"Count_Pct"})
     test.Count_Pct = test.Count_Pct.round(4)
     test.IntervalCuts = test.IntervalCuts.astype(str)
+    test.IntervalCuts = test.IntervalCuts.apply(lambda x: "("+str(round(float(x.split(",")[0].strip("(")),4)) +', ' + str(round(float(x.split(",")[-1].strip("]")),4)) +"]" if (x.split(",")[0].strip("(")[0]).isdigit() else x)
 
     test2 = pd.concat([df.groupby(col)[target].mean().fillna(0) for col in df[cols]], axis = 1)
     test2.columns = cols
@@ -159,6 +162,8 @@ def cuts_(target):
     test2 = test2.rename(columns={"index":"IntervalCuts", "column":"feature", "value":"Bad_Rate_Pct"})
     test2.Bad_Rate_Pct = test2.Bad_Rate_Pct.round(4)
     test2.IntervalCuts = test2.IntervalCuts.astype(str)
+    test2.IntervalCuts = test2.IntervalCuts.apply(lambda x: "("+str(round(float(x.split(",")[0].strip("(")),4)) +', ' + str(round(float(x.split(",")[-1].strip("]")),4)) +"]" if (x.split(",")[0].strip("(")[0]).isdigit() else x)
+
 
     test["index"] = test["feature"] + "_" + test["IntervalCuts"]
     test = test.set_index("index")
@@ -185,9 +190,12 @@ def qcuts_(target):
     neglect+= remove_feature
     cols = df2.columns.difference(neglect)  # Getting all columns except the ones in []
     # rank(method='first') is a must in qcut 
-    df2[cols] = df2[cols].apply(lambda col: pd.qcut(col.fillna(np.nan).rank(method='first'),
-                                                    q = 10, duplicates = "drop").cat.add_categories(pd.Categorical(f"Qcut_Missing_{col.name}")).fillna(f"Qcut_Missing_{col.name}"), axis=0)
-
+    # df2[cols] = df2[cols].apply(lambda col: pd.qcut(col.fillna(np.nan).rank(method='first'),
+    #                                                 q = 10, duplicates = "drop").cat.add_categories(pd.Categorical(f"Qcut_Missing_{col.name}")).fillna(f"Qcut_Missing_{col.name}"), axis=0)
+    df2[cols] = df2[cols].apply(lambda col: pd.qcut(col.fillna(np.nan).rank(method='first'),q = 10, labels=range(1,11)).cat.rename_categories({10:"Last"}).astype(str).replace(dict(dict(pd.concat([col,
+           pd.qcut(col.fillna(np.nan).rank(method='first'),q = 10, labels=range(1,11)).cat.rename_categories({10:"Last"})
+           .apply(str)], axis = 1, keys= ["feature", "qcuts"]).groupby("qcuts").agg([min, max]).reset_index().astype(str).set_index("qcuts",drop = False)
+     .apply(lambda x :x[0]+"_"+"("+x[1]+","+x[2]+"]",axis = 1)),**{"nan":f"Qcut_Missing_{col.name}"})), axis=0)
 
     test_q = pd.concat([df2[cols].value_counts(normalize = True) for cols in df2[cols]], axis = 1)
     cols = test_q.columns
@@ -225,7 +233,7 @@ def run(_):
     else:
         target = "default"
     print(str(selector.value[0]))
-    print(type(target))
+    print(target)
     # print(type(file_input.value))
     # print(type(New_Refit_routing))
     print(New_Refit_routing.head())
@@ -234,12 +242,12 @@ def run(_):
     cuts_(target)
     qcuts_(target)
     test2_plot = test2.set_index("IntervalCuts").hvplot.scatter(yaxis = "left", y = "Bad_Rate_Pct",
-               groupby = "feature", xlabel = "Intervals(Bins)", ylabel = "%Count vs %BadRate",height = 500,
-               width = 1000, title = "Features Segments Cuts & Q_Cuts by Count", legend = True).opts(xrotation=45, yformatter = "%.04f",show_grid=True, 
-                                                                                            framewise=True, color = "red")
+            groupby = "feature", xlabel = "Intervals(Bins)", ylabel = "%Count vs %BadRate",height = 500,
+            width = 1000, title = "Features Segments Cuts by Count", legend = True,label = "Bad Rate(%)").opts(xrotation=45, yformatter = "%.04f",show_grid=True, 
+                                                                                        framewise=True, color = "red")
     test_plot = test.set_index("IntervalCuts").hvplot.bar(y = "Count_Pct",
                 groupby = "feature", xlabel = "Intervals(Bins)", ylabel = "%Count vs %BadRate",height = 500,
-                width = 1000, title = "Features Segments Cuts & Q_Cuts by Count", legend=True, alpha=0.3).opts(xrotation=45, yformatter = "%.04f",show_grid=True, framewise=True, yaxis='left')
+                width = 1000, title = "Features Segments Cuts by Count", legend=True, alpha=0.3, label ="Equal Intervals Data Points(%)").opts(xrotation=45, yformatter = "%.04f",show_grid=True, framewise=True, yaxis='left')
     final_table = final_df.hvplot.table(groupby = "feature", width=400)
 
     test2_plot_q = test2_q.set_index("IntervalCuts").hvplot.scatter(yaxis = "left", y = "Bad_Rate_Pct",
@@ -248,7 +256,7 @@ def run(_):
                                                                                                 framewise=True, color = "red")
     test_plot_q = test_q.set_index("IntervalCuts").hvplot.bar(y = "Count_Pct",
                 groupby = "feature", xlabel = "Intervals(Bins)", ylabel = "%Count vs %BadRate",height = 500,
-                width = 1000, title = "Features Segments Q_Cuts by Count", legend=True, alpha=0.3).opts(xrotation=45, yformatter = "%.04f",show_grid=True, framewise=True, yaxis='left')
+                width = 1000, title = "Features Segments Q_Cuts by Count", legend=True, alpha=0.3, label ="Equal Population Data Points(%)").opts(xrotation=45, yformatter = "%.04f",show_grid=True, framewise=True, yaxis='left')
     final_table_q = final_df_q.hvplot.table(groupby = "feature", width=400)
 
 
