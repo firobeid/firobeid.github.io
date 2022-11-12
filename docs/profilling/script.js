@@ -96,11 +96,11 @@ def get_data():
         New_Refit_routing.write(file_input.value)
         New_Refit_routing.seek(0)
         try:
-            New_Refit_routing = pd.read_csv(New_Refit_routing, error_bad_lines=False).set_index("id")
+            New_Refit_routing = pd.read_csv(New_Refit_routing, error_bad_lines=False)#.set_index("id")
         except:
             New_Refit_routing = pd.read_csv(New_Refit_routing, error_bad_lines=False)
         target = None
-        New_Refit_routing = New_Refit_routing.select_dtypes(exclude=['datetime', "category"])
+        New_Refit_routing = New_Refit_routing.select_dtypes(exclude=['datetime', "category","object"])
         New_Refit_routing = New_Refit_routing[[cols for cols in New_Refit_routing.columns if New_Refit_routing[cols].nunique() >= 2]] #remove columns with less then 2 values
     return target, New_Refit_routing
 
