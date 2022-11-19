@@ -81,7 +81,10 @@ widgets = pn.WidgetBox(
 
 
 def closest(lst, K):
-    return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-K))]
+    try:
+        return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-K))]
+    except:
+        return K
 
 def get_data():
     global target, New_Refit_routing
@@ -101,7 +104,7 @@ def get_data():
             New_Refit_routing = pd.read_csv(New_Refit_routing, error_bad_lines=False)
         target = None
         New_Refit_routing = New_Refit_routing.select_dtypes(exclude=['datetime', "category","object"])
-        New_Refit_routing = New_Refit_routing[[cols for cols in New_Refit_routing.columns if New_Refit_routing[cols].nunique() >= 2]] #remove columns with less then 2 unique values
+        # New_Refit_routing = New_Refit_routing[[cols for cols in New_Refit_routing.columns if New_Refit_routing[cols].nunique() >= 2]] #remove columns with less then 2 unique values
     return target, New_Refit_routing
 
 
@@ -126,10 +129,12 @@ def cuts_(target):
     df = New_Refit_routing.copy() 
     neglect = [target] + [cols for cols in df.columns if df[cols].nunique() <= 2] #remove binary and target variable
     cols = df.columns.difference(neglect)  # Getting all columns except the ones in []
+
     #REMOVE OUTIERS#
     df[cols] = df[cols].apply(lambda col: col.clip(lower = col.quantile(.01), 
                                         upper = closest(col[col < col.quantile(.99)].dropna().values, 
                                         col.quantile(.99))),axis = 0)
+
     outlier_removed_stats = df.describe().T
     remove_feature = list(outlier_removed_stats[(outlier_removed_stats["mean"]==outlier_removed_stats["max"]) & 
                         (outlier_removed_stats["mean"]==outlier_removed_stats["min"])].index)
@@ -179,10 +184,23 @@ def qcuts_(target):
     neglect = [target] + [cols for cols in df2.columns if df2[cols].nunique() <= 2] #remove binary and target variable
     cols = df2.columns.difference(neglect)  # Getting all columns except the ones in []
 
+    #DEBUGGING CODE#####################################################################################
+    # for i in df2[cols].columns:
+    #     print(i)
+    #     print(df2[i][df2[i] < df2[i].quantile(.99)].dropna().values)
+    #     print(df2[i].quantile(.99))
+    #     print(closest(df2[i][df2[i] < df2[i].quantile(.99)].dropna().values, df2[i].quantile(.99)))
+        # df2.apply(lambda col: col.clip(lower = col.quantile(.01), 
+        #                                 upper = closest(col[col < col.quantile(.99)].dropna().values, 
+        #                                 col.quantile(.99))),axis = 0)
+    
+    ####################################################################################################
     #REMOVE OUTIERS#
+
     df2[cols] = df2[cols].apply(lambda col: col.clip(lower = col.quantile(.01), 
                                         upper = closest(col[col < col.quantile(.99)].dropna().values, 
                                         col.quantile(.99))),axis = 0)
+
     temp = df2.describe().T
     remove_feature = list(temp[(temp["mean"]==temp["max"]) & 
                         (temp["mean"]==temp["min"])].index)
