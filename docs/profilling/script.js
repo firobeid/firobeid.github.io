@@ -101,7 +101,7 @@ def get_data():
             New_Refit_routing = pd.read_csv(New_Refit_routing, error_bad_lines=False)
         target = None
         New_Refit_routing = New_Refit_routing.select_dtypes(exclude=['datetime', "category","object"])
-        New_Refit_routing = New_Refit_routing[[cols for cols in New_Refit_routing.columns if New_Refit_routing[cols].nunique() >= 2]] #remove columns with less then 2 values
+        New_Refit_routing = New_Refit_routing[[cols for cols in New_Refit_routing.columns if New_Refit_routing[cols].nunique() >= 2]] #remove columns with less then 2 unique values
     return target, New_Refit_routing
 
 
@@ -123,8 +123,8 @@ def stats_():
 
 def cuts_(target):
     global test, test2, final_df , outlier_removed_stats
-    df = New_Refit_routing.copy()
-    neglect = [target] #
+    df = New_Refit_routing.copy() 
+    neglect = [target] + [cols for cols in df.columns if df[cols].nunique() <= 2] #remove binary and target variable
     cols = df.columns.difference(neglect)  # Getting all columns except the ones in []
     #REMOVE OUTIERS#
     df[cols] = df[cols].apply(lambda col: col.clip(lower = col.quantile(.01), 
@@ -176,7 +176,7 @@ def cuts_(target):
 def qcuts_(target):
     global test_q, test2_q, final_df_q
     df2 = New_Refit_routing.copy()
-    neglect = [target] #
+    neglect = [target] + [cols for cols in df2.columns if df2[cols].nunique() <= 2] #remove binary and target variable
     cols = df2.columns.difference(neglect)  # Getting all columns except the ones in []
 
     #REMOVE OUTIERS#
