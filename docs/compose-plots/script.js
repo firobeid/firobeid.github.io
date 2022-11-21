@@ -91,10 +91,24 @@ pn.state.template.param.update(
 # Create a Title for the Dashboard
 title = pn.pane.Markdown(
     """
-# Hospital Data Analysis - UCBerkley FinTech Bootcamp Demo
+# UCBerkley FinTech Bootcamp Demo - Firas Obeid
 """,
-    width=800,
+    width=1000,
 )
+title1 = pn.pane.Markdown(
+    """
+# Hospital Data Analysis
+""",
+    width=800,  
+)
+
+title2 = pn.pane.Markdown(
+    """
+# Machine Learning Unwinding 
+""",
+    width=800,  
+)
+
 image = pn.pane.image.PNG(
     'https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/image.png',
     alt_text='Meme Logo',
@@ -110,16 +124,33 @@ welcome = pn.pane.Markdown(
 
 """
 )
+slider = pn.widgets.IntSlider(start=1, end=10)
+
+def slideshow(index):
+    url = f"https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/{index}.png"
+    return pn.pane.JPG(url, width = 500)
+
+output = pn.bind(slideshow, slider)
+
+app = pn.Column(slider, output)
 # Create a tab layout for the dashboard
 tabs = pn.Tabs(
-    ("Welcome", pn.Column(welcome, image)),
-    ("total_payments_by_state", pn.Row(plot1)),
-    ("sorted_total_payments_by_state", pn.Row(plot2)),
-    ("Tab1 + Tab2", pn.Column(plot3,width=960)),
-    ("sorted_total_medicare_by_state", pn.Row(plot4,plot5, plot6, width=2000))
+    ("Welcome", pn.Column(welcome, image)
+    ),
+    ("DataViz",pn.Tabs(("Title",pn.Row(title1)),
+                    ("total_payments_by_state", pn.Row(plot1)),
+                    ("sorted_total_payments_by_state", pn.Row(plot2)),
+                    ("Tab1 + Tab2", pn.Column(plot3,width=960)),
+                    ("sorted_total_medicare_by_state", pn.Row(plot4,plot5, plot6, width=2000))
+                      )
+    ),
+    ("Zen of ML", pn.Tabs(("Title",pn.Row(title2)),
+                          ('Lets Get Things Straight',pn.Column(slider, output))
+                         )
+    )
     )
 
-pn.Column(pn.Row(title), tabs, width=900).servable(target='main')
+pn.Column(pn.Row(title), tabs, width=500).servable(target='main')
 
 await write_doc()
   `
