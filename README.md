@@ -17,3 +17,5 @@ Deploy your dashboards easily to github pages through converting your python cod
 
 My deployment that is live serving based on the students' in class activities: [Press Me](https://firobeid.github.io/compose-plots/script.html)
 
+My credit risk data science tool intiative that I also deployed as part of my data science position at OppFi Inc. to enhance the quality of work off our modelling and strategy teams: [Credit Risk Feature Profilling](https://firobeid.github.io/profilling/script.html)
+
