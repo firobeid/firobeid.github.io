@@ -46,7 +46,10 @@ import panel as pn
 import holoviews as hv
 import hvplot.pandas
 from warnings import filterwarnings
-
+'''
+development env: panel serve script.py --autoreload
+prod prep: panel convert script.py --to pyodide-worker --out pyodide
+'''
 
 filterwarnings("ignore")
 hv.extension('bokeh')
@@ -54,9 +57,10 @@ hv.extension('bokeh')
 
 text = """
 #  Feature Distribution and Stats
-## AUTHOR: \`FIRAS ALI OBEID\`
+## AUTHOR: [\`FIRAS ALI OBEID\`](https://www.linkedin.com/in/feras-obeid/) 
+###  GNU General Public License v3.0 (GPL-3.0)
 
-This tool performs feature binning by equal intervals and by equal pouplations in each interval vs bad rate
+This tool performs feature binning by equal intervals and by equal pouplations in each interval vs bad rate/target binary variable
 To get the feature deep dive feature distribution:
 
 1. Upload a CSV (only numerical data)
@@ -288,7 +292,7 @@ def run(_):
     pn.extension( template="fast")
     pn.state.template.param.update(
         # site_url="",
-        # site="",
+        site="CreditRisk",
         title="Feature Distribution & Statistics",
         # favicon="",
     )
@@ -308,8 +312,14 @@ def run(_):
 
 
 
+profiles = '''
+### Other Web Apps:
 
-pn.Row(pn.Column(widgets), pn.layout.Spacer(width=20), run).servable(target='main')
+* [Twitter Sentiment Analysis Flask App](https://firobeid.pythonanywhere.com/)
+
+* [Personal Lectures @ UCBerkley Using Panel App](https://firobeid.github.io/compose-plots/script.html)
+'''
+pn.Row(pn.Column(widgets, profiles), pn.layout.Spacer(width=20), run).servable(target='main')
 
 await write_doc()
   `
