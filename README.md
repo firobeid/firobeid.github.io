@@ -19,3 +19,5 @@ My deployment that is live serving based on the students' in class activities: [
 
 My credit risk data science tool intiative that I also deployed as part of my data science position at OppFi Inc. to enhance the quality of work off our modelling and strategy teams: [Credit Risk Feature Profilling](https://firobeid.github.io/profilling/script.html)
 
+<p style="text-align:center;"><img src="https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/Images/compose-plots/Resources/credit_risk__DataScience.png" width="800" height="400"/></p>
+
