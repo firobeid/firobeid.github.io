@@ -124,16 +124,119 @@ welcome = pn.pane.Markdown(
 
 """
 )
-slider = pn.widgets.IntSlider(start=1, end=10)
-
-def slideshow(index):
+#ML GENERAL
+ml_slider = pn.widgets.IntSlider(start=1, end=10)
+def ml_slideshow(index):
     url = f"https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/{index}.png"
     return pn.pane.JPG(url, width = 500)
 
-output = pn.bind(slideshow, slider)
+ml_output = pn.bind(ml_slideshow, ml_slider)
+ml_app = pn.Column(ml_slider, ml_output)
 
-app = pn.Column(slider, output)
+##CLUSTERING
+clustering_slider = pn.widgets.IntSlider(start=1, end=36)
+def cluster_slideshow(index):
+    url2 = f"https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/Clustering/Clustering-{index}.png"
+    return pn.pane.PNG(url2,width = 800)
+cluster_output = pn.bind(cluster_slideshow, clustering_slider)
+# cluster_app = pn.Column(clustering_slider, cluster_output)
+k_means_simple = pn.pane.Markdown("""
+### K_means Simple Algo Implementation
+\`\`\`python
+
+from sklearn.metrics import pairwise_distances_argmin
+
+def find_clusters(X, n_clusters, rseed=2):
+    # 1. Randomly choose clusters
+    rng = np.random.RandomState(rseed)
+    i = rng.permutation(X.shape[0])[:n_clusters]
+    centers = X[i]
+    
+    while True:
+        # 2a. Assign labels based on closest center
+        labels = pairwise_distances_argmin(X, centers)
+        
+        # 2b. Find new centers from means of points
+        new_centers = np.array([X[labels == i].mean(0)
+                                for i in range(n_clusters)])
+        
+        # 2c. Check for convergence
+        if np.all(centers == new_centers):
+            break
+        centers = new_centers
+    
+    return centers, labels
+\`\`\`
+""",width = 500)
+
+##GENERAL ML
+general_ml_slider = pn.widgets.IntSlider(start=1, end=11)
+def general_ml_slideshow(index):
+    url = f"https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Algo_Survey/{index}.png"
+    return pn.pane.PNG(url,width = 800)
+general_ml_output = pn.bind(general_ml_slideshow, general_ml_slider)
+
+
+
+##TIMESERIES
+timeseries_libs = pn.pane.Markdown("""
+## 10 Time-Series Python Libraries in 2022:
+
+### 📚 Flow forecast
+
+Flow forecast is a deep learning for time series forecasting framework. It provides the latest models (transformers, attention models, GRUs) and cutting edge concepts with interpretability metrics. It is the only true end-to-end deep learning for time series forecasting framework.
+
+### 📚 Auto_TS
+
+Auto_TS train multiple time series models with just one line of code and is a part of autoML.
+
+### 📚 SKTIME
+
+Sktime an extension to scikit-learn includes machine learning time-series for regression, prediction, and classification. This library has the most features with interfaces scikit-learn, statsmodels, TSFresh and PyOD.
+
+### 📚 Darts
+
+Darts contains a large number of models ranging from ARIMA to deep neural networks. It also lets users combine predictions from several models and external regressors which makes it easier to backtest models.
+
+### 📚 Pmdarima
+
+Pmdarima is a wrapper over ARIMA with automatic Hyperparameter tunning for analyzing, forecasting, and visualizing time series data including transformers and featurizers, including Box-Cox and Fourier transformations and a seasonal decomposition tool.
+
+### 📚 TSFresh
+
+TSFresh automates feature extraction and selection from time series. It has Dimensionality reduction, Outlier detection and missing values.
+
+### 📚 Pyflux
+
+Pyflux builds probabilistic model, very advantageous for tasks where a more complete picture of uncertainty is needed and the latent variables are treated as random variables through a joint probability.
+
+
+### 📚 Prophet
+
+Facebook’s Prophet is a forecasting tool for CSV format and is suitable for strong seasonal data and robust to missing data and outliers.
+
+### 📚 Statsforecast
+
+Statsforecast offers a collection of univariate time series. It invludes ADIDA, HistoricAverage, CrostonClassic, CrostonSBA, CrostonOptimized, SeasonalNaive, IMAPA Naive, RandomWalkWithDrift, TSB, AutoARIMA and ETS.
+Impressive fact: It is 20x faster than pmdarima , 500x faster than Prophet,100x faster than NeuralProphet, 4x faster than statsmodels. 
+
+### 📚 PyCaret
+
+PyCaret replaces hundreds of lines of code with few lines only. Its time-series forecasting is in pre-release mode with --pre tag with 30+ algorithms. It includes automated hyperparameter tuning, experiment logging and deployment on cloud.
+
+### 📚 NeuralProphet
+
+NeuralProphet is a Neural Network based Time-Series model, inspired by Facebook Prophet and AR-Net, built on PyTorch.
+
+Source: Maryam Miradi, PhD 
+""",width = 800)
+
+
 # Create a tab layout for the dashboard
+# https://USERNAME.github.io/REPO_NAME/PATH_TO_FILE.pdf
+motivational = pn.pane.Alert("## YOUR PROGRESS...\\nUpward sloping and incremental. Keep moving forward!", alert_type="success")
+gif_pane = pn.pane.GIF('https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif')
+progress_ = pn.pane.PNG('https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/Progress.png')
 tabs = pn.Tabs(
     ("Welcome", pn.Column(welcome, image)
     ),
@@ -144,13 +247,18 @@ tabs = pn.Tabs(
                     ("sorted_total_medicare_by_state", pn.Row(plot4,plot5, plot6, width=2000))
                       )
     ),
-    ("Zen of ML", pn.Tabs(("Title",pn.Row(title2)),
-                          ('Lets Get Things Straight',pn.Column(slider, output))
+    ("Zen of ML", pn.Tabs(("Title",pn.Row(title2,gif_pane, pn.Column(motivational,progress_))),
+                          ('Lets Get Things Straight',pn.Column(ml_slider, ml_output)),
+                          ('Unsupervised Learning (Clustering)', pn.Row(pn.Column(clustering_slider, cluster_output),k_means_simple)),
+                          ("TimeSeries Forecasting",pn.Row(timeseries_libs)),
+                          ("General ML Algorithms' Survey", pn.Column(general_ml_slider, general_ml_output))
                          )
     )
     )
 
-pn.Column(pn.Row(title), tabs, width=500).servable(target='main')
+audio = pn.pane.Audio('http://ccrma.stanford.edu/~jos/mp3/pno-cs.mp3', name='Audio')
+pn.Column(pn.Row(title), tabs, pn.Row(pn.pane.Alert("Enjoy some background classic", alert_type="success"),audio), ).servable(target='main')
+
 
 await write_doc()
   `
