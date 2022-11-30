@@ -40,7 +40,10 @@ from pathlib import Path
 import pandas as pd
 import hvplot.pandas
 
-
+'''
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="expires" content="-1" />
+'''
 
 hospital_data = pd.read_csv(
     'https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/hospital_claims.csv'
@@ -78,8 +81,8 @@ plot5 = sorted_total_payments_by_state.hvplot.line(label="Average Total Payments
 # Overlay plots of the same type using * operator
 plot6 = sorted_total_payments_by_state.hvplot.bar(label="Average Total Payments", rot = 45) * sorted_total_medicare_by_state.hvplot.bar(label="Average Medicare Payments", width = 1000, rot = 45)
 
-
-
+# hvplot_snip = pn.pane.HTML("https://firobeid.github.io/compose-plots/Resources/binning_V1.html")
+hvplot_snip = pn.pane.Markdown("""[DataViz HTMLS Deployments](https://firobeid.github.io/compose-plots/Resources/binning_V1.html)""")
 pn.extension( template="fast")
 
 pn.state.template.param.update(
@@ -230,8 +233,79 @@ NeuralProphet is a Neural Network based Time-Series model, inspired by Facebook 
 
 Source: Maryam Miradi, PhD 
 """,width = 800)
+timeseries_data_split = pn.pane.Markdown("""
+### Training and Validating Time Series Forecasting Models
+\`\`\`python
+
+from sklearn.model_selection import TimeSeriesSplit
+N_SPLITS = 4
 
 
+X = df['timestamp']
+y = df['value']
+
+
+folds = TimeSeriesSplit(n_splits = N_SPLITS)
+
+
+for i, (train_index, valid_index) in enumerate(folds.split(X)):
+	X_train, X_valid = X[train_index], X[valid_index]
+	y_train, y_valid = y[train_index], y[valid_index]
+\`\`\`
+### Training and Validating \`Financial\` Time Series Forecasting Models
+\`\`\`python
+
+__author__ = 'Stefan Jansen'
+class MultipleTimeSeriesCV:
+    '''
+    Generates tuples of train_idx, test_idx pairs
+    Assumes the MultiIndex contains levels 'symbol' and 'date'
+    purges overlapping outcomes
+    '''
+
+    def __init__(self,
+                 n_splits=3,
+                 train_period_length=126,
+                 test_period_length=21,
+                 lookahead=None,
+                 date_idx='date',
+                 shuffle=False):
+        self.n_splits = n_splits
+        self.lookahead = lookahead
+        self.test_length = test_period_length
+        self.train_length = train_period_length
+        self.shuffle = shuffle
+        self.date_idx = date_idx
+
+    def split(self, X, y=None, groups=None):
+        unique_dates = X.index.get_level_values(self.date_idx).unique()
+        days = sorted(unique_dates, reverse=True)
+        split_idx = []
+        for i in range(self.n_splits):
+            test_end_idx = i * self.test_length
+            test_start_idx = test_end_idx + self.test_length
+            train_end_idx = test_start_idx + self.lookahead - 1
+            train_start_idx = train_end_idx + self.train_length + self.lookahead - 1
+            split_idx.append([train_start_idx, train_end_idx,
+                              test_start_idx, test_end_idx])
+
+        dates = X.reset_index()[[self.date_idx]]
+        for train_start, train_end, test_start, test_end in split_idx:
+
+            train_idx = dates[(dates[self.date_idx] > days[train_start])
+                              & (dates[self.date_idx] <= days[train_end])].index
+            test_idx = dates[(dates[self.date_idx] > days[test_start])
+                             & (dates[self.date_idx] <= days[test_end])].index
+            if self.shuffle:
+                np.random.shuffle(list(train_idx))
+            yield train_idx.to_numpy(), test_idx.to_numpy()
+
+    def get_n_splits(self, X, y, groups=None):
+        return self.n_splits
+\`\`\`
+""",width = 800)
+ts_gif = pn.pane.GIF("https://raw.githubusercontent.com/firobeid/machine-learning-for-trading/main/assets/timeseries_windowing.gif")
+ts_cv = pn.pane.PNG("https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ts/cv.png",link_url = 'https://wandb.ai/iamleonie/A-Gentle-Introduction-to-Time-Series-Analysis-Forecasting/reports/A-Gentle-Introduction-to-Time-Series-Analysis-Forecasting--VmlldzoyNjkxOTMz', width = 800)
 # Create a tab layout for the dashboard
 # https://USERNAME.github.io/REPO_NAME/PATH_TO_FILE.pdf
 motivational = pn.pane.Alert("## YOUR PROGRESS...\\nUpward sloping and incremental. Keep moving forward!", alert_type="success")
@@ -240,7 +314,7 @@ progress_ = pn.pane.PNG('https://raw.githubusercontent.com/firobeid/firobeid.git
 tabs = pn.Tabs(
     ("Welcome", pn.Column(welcome, image)
     ),
-    ("DataViz",pn.Tabs(("Title",pn.Row(title1)),
+    ("DataViz",pn.Tabs(("Title",pn.Column(pn.Row(title1),hvplot_snip)),
                     ("total_payments_by_state", pn.Row(plot1)),
                     ("sorted_total_payments_by_state", pn.Row(plot2)),
                     ("Tab1 + Tab2", pn.Column(plot3,width=960)),
@@ -250,7 +324,7 @@ tabs = pn.Tabs(
     ("Zen of ML", pn.Tabs(("Title",pn.Row(title2,gif_pane, pn.Column(motivational,progress_))),
                           ('Lets Get Things Straight',pn.Column(ml_slider, ml_output)),
                           ('Unsupervised Learning (Clustering)', pn.Row(pn.Column(clustering_slider, cluster_output),k_means_simple)),
-                          ("TimeSeries Forecasting",pn.Row(timeseries_libs)),
+                          ("TimeSeries Forecasting",pn.Row(timeseries_libs,pn.Column(ts_gif, ts_cv),timeseries_data_split)),
                           ("General ML Algorithms' Survey", pn.Column(general_ml_slider, general_ml_output))
                          )
     )
