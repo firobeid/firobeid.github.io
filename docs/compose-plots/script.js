@@ -120,7 +120,7 @@ image = pn.pane.image.PNG(
 )
 welcome = pn.pane.Markdown(
     """
-### This dashboard presents a visual analysis of hospital data for a demo to UCBerkley FinTech Bootcamp students in \`Firas Obeid's\` classes
+### This dashboard presents a visual analysis of hospital data for a demo to UCBerkley FinTech Bootcamp students in [\`Firas Obeid's\`](https://www.linkedin.com/in/feras-obeid/) classes
 * Motive is to keep students up to date with the tools that allows them to define a problem till deployment in a very short amount of time for efficient deliverables in the work place or in academia.
 * Disclaimer: All data presented are from UCBerkley resources.
 * Disclaimer: All references: https://blog.holoviz.org/panel_0.14.html
@@ -216,9 +216,18 @@ Pyflux builds probabilistic model, very advantageous for tasks where a more comp
 
 ### 📚 Prophet
 
-Facebook’s Prophet is a forecasting tool for CSV format and is suitable for strong seasonal data and robust to missing data and outliers.
+Facebook's Prophet is a forecasting tool for CSV format and is suitable for strong seasonal data and robust to missing data and outliers.
+Prophet is a library that makes it easy for you to fit a model that decomposes a time series model into trend, season, and holiday components. It's somewhat customizable and has a few nifty tools like graphing and well-thought out forecasting.
+Prophet does the following linear decomposition:
+
+* g(t): Logistic or linear growth trend with optional linear splines (linear in the exponent for the logistic growth). The library calls the knots 'change points.'
+* s(t): Sine and cosine (i.e. Fourier series) for seasonal terms.
+* h(t): Gaussian functions (bell curves) for holiday effects (instead of dummies, to make the effect smoother).
+
+[Some thoughts about Prophet](https://www.reddit.com/r/MachineLearning/comments/syx41w/p_beware_of_false_fbprophets_introducing_the/)
 
 ### 📚 Statsforecast
+[GitHub Link to Statsforecast](https://github.com/Nixtla/statsforecast)
 
 Statsforecast offers a collection of univariate time series. It invludes ADIDA, HistoricAverage, CrostonClassic, CrostonSBA, CrostonOptimized, SeasonalNaive, IMAPA Naive, RandomWalkWithDrift, TSB, AutoARIMA and ETS.
 Impressive fact: It is 20x faster than pmdarima , 500x faster than Prophet,100x faster than NeuralProphet, 4x faster than statsmodels. 
