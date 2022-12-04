@@ -39,6 +39,7 @@ import panel as pn
 from pathlib import Path
 import pandas as pd
 import hvplot.pandas
+from io import BytesIO
 
 '''
 <meta http-equiv="pragma" content="no-cache" />
@@ -320,6 +321,94 @@ ts_cv = pn.pane.PNG("https://raw.githubusercontent.com/firobeid/firobeid.github.
 motivational = pn.pane.Alert("## YOUR PROGRESS...\\nUpward sloping and incremental. Keep moving forward!", alert_type="success")
 gif_pane = pn.pane.GIF('https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif')
 progress_ = pn.pane.PNG('https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/Progress.png')
+
+##TIMESERIES COMPETITION
+
+def cal_error_metrics():
+    global real_test_data, predictions
+
+    def rmse(preds,target):
+        if (len(preds)!=len(target)):
+            raise AttributeError('list1 and list2 must be of same length')
+        return round(((sum((preds[i]-target[i])**2 for i in range(len(preds)))/len(preds)) ** 0.5),2)
+
+    try:
+        assert len(real_test_data) == len(predictions)
+    except Exception as e: # if less than 2 words, return empty result
+        return pn.pane.Markdown("""ERROR:You didnt upload excatly 17519 predictions rows!!""")
+    try:
+        rmse_error = rmse(real_test_data["GHI"].values, predictions[predictions.columns[0]].values)    
+        error_df = pd.DataFrame({"RMSE":[rmse_error]}, index = ["Error_Value"])
+    except Exception as e: 
+        return pn.pane.Markdown(f"""{e}""")
+
+    return pn.widgets.DataFrame(error_df, width=300, height=100, name = 'Score Board')
+
+
+def get_real_test_timeseries():
+    global real_test_data, predictions 
+    real_test_data = hospital_data = pd.read_csv(
+    'https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/TimeSeriesCompetition/test_data/competition_real_test_data_2018.csv'
+).dropna()
+    if file_input_ts.value is None:
+        predictions = pd.DataFrame({'GHI': [real_test_data['GHI'].mean()] * len(real_test_data)})
+    else:
+        predictions = BytesIO()
+        predictions.write(file_input_ts.value)
+        predictions.seek(0)
+        try:
+            predictions = pd.read_csv(predictions, error_bad_lines=False).dropna()#.set_index("id")
+        except:
+            predictions = pd.read_csv(predictions, error_bad_lines=False).dropna()
+        if len(predictions.columns) > 1:
+            predictions = predictions[[predictions.columns[-1]]]
+        predictions = predictions._get_numeric_data()
+        predictions[predictions < 0] = 0 #predictions cant be hegative for solar energy prediction task
+        # New_Refit_routing = New_Refit_routing[[cols for cols in New_Refit_routing.columns if New_Refit_routing[cols].nunique() >= 2]] #remove columns with less then 2 unique values
+    # return predictions
+
+
+# text_widget = pn.widgets.DataFrame(value=sample_text, height=300, name='Add text')
+run_button = pn.widgets.Button(name="Click to get model error/score!")
+file_input_ts = pn.widgets.FileInput(align='center')
+text_ts = """
+# Prediction Submission
+
+This section is to host a time series modelling competition between UCBekely students teams'. The teams should
+build a time series univariate or multivariate model but the aim is to forcast the \`GHI\` column (a solar energy storage metric).
+
+The train data is 30 minutes frequecy data between 2010-2017 for solar energy for UTDallas area. The students then predict the whole off 2018
+,which is 17519 data points (periods) into the future (2018).
+
+The data used for the modelling can be found here: 
+[Competition Data](https://github.com/firobeid/Forecasting-techniques/tree/master/train_data)
+
+### Instructions
+1. Upload predictions CSV (only numerical data)
+2. Make sure you have 17519 predictions / row in your CSV
+3. Press \`Click to get model error/score!\`
+4. Observe you predictions error to the right ==>
+"""
+widgets_ts = pn.WidgetBox(
+    pn.panel(text_ts, margin=(0, 10)),
+    pn.panel('Upload Prediction CSV', margin=(0, 10)),
+    file_input_ts,
+    run_button, width = 500
+)
+
+def update_target(event):
+    get_real_test_timeseries()
+
+file_input_ts.param.watch(update_target, 'value')
+
+@pn.depends(run_button.param.clicks)
+def ts_competition(_):
+    get_real_test_timeseries()
+    return pn.Column(cal_error_metrics)
+
+
+# get_real_test_timeseries()
+##FINAL##
 tabs = pn.Tabs(
     ("Welcome", pn.Column(welcome, image)
     ),
@@ -334,7 +423,8 @@ tabs = pn.Tabs(
                           ('Lets Get Things Straight',pn.Column(ml_slider, ml_output)),
                           ('Unsupervised Learning (Clustering)', pn.Row(pn.Column(clustering_slider, cluster_output),k_means_simple)),
                           ("TimeSeries Forecasting",pn.Row(timeseries_libs,pn.Column(ts_gif, ts_cv),timeseries_data_split)),
-                          ("General ML Algorithms' Survey", pn.Column(general_ml_slider, general_ml_output))
+                          ("General ML Algorithms' Survey", pn.Column(general_ml_slider, general_ml_output)),
+                          ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts), pn.layout.Spacer(width=20), ts_competition)) #pn.widgets.DataFrame(predictions)
                          )
     )
     )
