@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas']
+  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'github', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas']
   for (const pkg of env_spec) {
     const pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
     self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
@@ -40,6 +40,7 @@ from pathlib import Path
 import pandas as pd
 import hvplot.pandas
 from io import BytesIO
+from github import Github
 
 '''
 <meta http-equiv="pragma" content="no-cache" />
@@ -121,10 +122,14 @@ image = pn.pane.image.PNG(
 )
 welcome = pn.pane.Markdown(
     """
-### This dashboard presents a visual analysis of hospital data for a demo to UCBerkley FinTech Bootcamp students in [\`Firas Obeid's\`](https://www.linkedin.com/in/feras-obeid/) classes
-* Motive is to keep students up to date with the tools that allows them to define a problem till deployment in a very short amount of time for efficient deliverables in the work place or in academia.
+### This dashboard/WebApp leverages FinTech and Data Science tools for practical and hands on demo's for UCBerkley FinTech Bootcamp students in [\`Firas Ali Obeid's\`](https://www.linkedin.com/in/feras-obeid/) classes
+* Motive is to keep students up to date with the tools that allows them to define a problem till deployment in a very short amount of time for efficient deliverables in the work place or in academia. 
+* The tool/web app is developed completly using python and deployed serverless on github pages (not static anymore right?! 
+
 * Disclaimer: All data presented are from UCBerkley resources.
 * Disclaimer: All references: https://blog.holoviz.org/panel_0.14.html
+
+***\`Practice what you preach\`***
 
 """
 )
@@ -179,8 +184,6 @@ def general_ml_slideshow(index):
     url = f"https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Algo_Survey/{index}.png"
     return pn.pane.PNG(url,width = 800)
 general_ml_output = pn.bind(general_ml_slideshow, general_ml_slider)
-
-
 
 ##TIMESERIES
 timeseries_libs = pn.pane.Markdown("""
@@ -322,10 +325,13 @@ motivational = pn.pane.Alert("## YOUR PROGRESS...\\nUpward sloping and increment
 gif_pane = pn.pane.GIF('https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif')
 progress_ = pn.pane.PNG('https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/Progress.png')
 
-##TIMESERIES COMPETITION
-
+##########################
+##TIMESERIES COMPETITION##
+##########################
+reward = pn.pane.PNG("https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/TimeSeriesCompetition/Images/Reward.png")
+other_metrics = pn.pane.PNG("https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ts/Regression_Loss_functions.png", height = 500)
 def cal_error_metrics():
-    global real_test_data, predictions
+    global real_test_data, predictions, rmse_error
 
     def rmse(preds,target):
         if (len(preds)!=len(target)):
@@ -337,8 +343,10 @@ def cal_error_metrics():
     except Exception as e: # if less than 2 words, return empty result
         return pn.pane.Markdown("""ERROR:You didnt upload excatly 17519 predictions rows!!""")
     try:
-        rmse_error = rmse(real_test_data["GHI"].values, predictions[predictions.columns[0]].values)    
-        error_df = pd.DataFrame({"RMSE":[rmse_error]}, index = ["Error_Value"])
+        rmse_error = rmse(real_test_data["GHI"].values, predictions[predictions.columns[0]].values)
+
+        error_df = pd.DataFrame({"RMSE":[rmse_error]}, index = [str(file_input_ts.filename)])
+        error_df.index.name = 'Uploaded_Predictions'
     except Exception as e: 
         return pn.pane.Markdown(f"""{e}""")
 
@@ -356,6 +364,7 @@ def get_real_test_timeseries():
         predictions = BytesIO()
         predictions.write(file_input_ts.value)
         predictions.seek(0)
+        print(file_input_ts.filename)
         try:
             predictions = pd.read_csv(predictions, error_bad_lines=False).dropna()#.set_index("id")
         except:
@@ -367,33 +376,114 @@ def get_real_test_timeseries():
         # New_Refit_routing = New_Refit_routing[[cols for cols in New_Refit_routing.columns if New_Refit_routing[cols].nunique() >= 2]] #remove columns with less then 2 unique values
     # return predictions
 
+def github_cred():
+    repo_name = 'firobeid/TimeSeriesCompetitionTracker'
+    # using an access token
+    g = Github("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")
+    return g.get_repo(repo_name)
 
-# text_widget = pn.widgets.DataFrame(value=sample_text, height=300, name='Add text')
+def leaderboard_ts():
+    global file_on_github
+    # repo_name = 'firobeid/TimeSeriesCompetitionTracker'
+    # # using an access token
+    # g = Github("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")
+    # # Create Github linkage Instance
+    # g = github_cred()
+    # if prediction_submission_name.value == 'Firas_Prediction_v1':
+    repo = github_cred()
+    contents = repo.get_contents("")
+    competitior_rank_file = 'leadership_board_ts.csv'
+    if competitior_rank_file not in [i.path for i in contents]:
+        print("Creatine leaderboard file...")
+        repo.create_file(competitior_rank_file, "creating timeseries leaderboard", "Competitor_Submission, RMSE", branch="main")
+    file_on_github = pd.read_csv("https://raw.githubusercontent.com/firobeid/TimeSeriesCompetitionTracker/main/leadership_board_ts.csv", delim_whitespace=" ") 
+
+def upload_scores():
+    global rmse_error, sub_name
+    competitior_rank_file = 'leadership_board_ts.csv'
+    repo = github_cred()
+    submission = sub_name
+    score = rmse_error
+    file_on_github.loc[len(file_on_github.index)] = [submission, score]
+
+    target_content = repo.get_contents(competitior_rank_file)
+    repo.update_file(competitior_rank_file, "Uploading scores for %s"%sub_name,  file_on_github.to_string(index=False), target_content.sha, branch="main")
+    return pn.pane.Markdown("""Successfully Uploaded to Leaderboard!""")
+
+def final_github():
+    global sub_name
+    global real_test_data, predictions, rmse_error
+    sub_name = str(prediction_submission_name.value.replace("\\n", "").replace(" ", ""))
+    print(sub_name)
+    if 'rmse_error' not in globals(): #not to allow saving rmse everytime site is reoaded
+        return pn.widgets.DataFrame(file_on_github.sort_values(by = 'RMSE',ascending=True).set_index('Competitor_Submission'), width=600, height=1000, name = 'Leader Board')
+    
+    else:
+        try:
+            if sub_name != 'Firas_Prediction_v1': #not to allow saving rmse everytime site is reoaded also
+                upload_scores()
+        except Exception as e: 
+            return pn.pane.Markdown(f"""{e}""")
+        file_on_github["Rank"] = file_on_github.rank(method = "min")["RMSE"]
+        return pn.widgets.DataFrame(file_on_github.sort_values(by = 'RMSE',ascending=True).set_index('Rank'), width=600, height=1000, name = 'Leader Board')
+
+run_github_upload = pn.widgets.Button(name="Click to Upload Results to Leaderscore Board!")
+prediction_submission_name  = pn.widgets.TextAreaInput(value="Firas_Prediction_v1", height=100, name='Change the name of submission below:')
+widgets_submission = pn.WidgetBox(
+    pn.panel("""# Submit to LeaderBoard Ranking""", margin=(0, 10)),
+    pn.panel('* Change Submision Name Below to your own version and team name (no spaces in between)', margin=(0, 10)),
+    prediction_submission_name,
+    run_github_upload, 
+    pn.pane.Alert("""##                Leader Ranking Board""", alert_type="success",),
+    width = 500
+)
+
+# def update_submission_widget(event):
+#     global sub_name
+#     prediction_submission_name.value = event.new
+#     sub_name = str(prediction_submission_name.value.replace("\\n", "").replace(" ", ""))
+#     print(sub_name)
+# # when prediction_submission_name changes, 
+# # run this function to global variable sub_name
+# prediction_submission_name.param.watch(update_submission_widget, "value")
+
+@pn.depends(run_github_upload.param.clicks)
+def ts_competition_submission(_):
+    leaderboard_ts()
+    return pn.Column(final_github)
+
+
 run_button = pn.widgets.Button(name="Click to get model error/score!")
 file_input_ts = pn.widgets.FileInput(align='center')
 text_ts = """
-# Prediction Submission
+# Prediction Error Scoring
 
 This section is to host a time series modelling competition between UCBekely students teams'. The teams should
 build a time series univariate or multivariate model but the aim is to forcast the \`GHI\` column (a solar energy storage metric).
 
 The train data is 30 minutes frequecy data between 2010-2017 for solar energy for UTDallas area. The students then predict the whole off 2018
-,which is 17519 data points (periods) into the future (2018).
+,which is 17519 data points (periods) into the future (2018). The students submit there predictions as csv over here, 
+get error score (RMSE not the best maybe but serves learning objective) and submit to leaderboard to be ranked. Public submissions
+are welcome! But I cant give you extra points on project 2 ;)
 
 The data used for the modelling can be found here: 
 [Competition Data](https://github.com/firobeid/Forecasting-techniques/tree/master/train_data)
 
 ### Instructions
 1. Upload predictions CSV (only numerical data)
-2. Make sure you have 17519 predictions / row in your CSV
+2. Make sure you have 17519 predictions / row in your CSV and only one column
 3. Press \`Click to get model error/score!\`
-4. Observe you predictions error to the right ==>
+4. Observe you predictions error under yellow box bellow
+5. If satisfied move on to the next box to the right to submit team name and prediction. 
+\`My code takes care of pulling your error and storing it on GitHub to be ranked against incoming scores from teams\`
 """
 widgets_ts = pn.WidgetBox(
     pn.panel(text_ts, margin=(0, 10)),
     pn.panel('Upload Prediction CSV', margin=(0, 10)),
     file_input_ts,
-    run_button, width = 500
+    run_button, 
+    pn.pane.Alert("### Prediction Results Will Refresh Below After Clicking above", alert_type="warning")
+    , width = 500
 )
 
 def update_target(event):
@@ -407,8 +497,9 @@ def ts_competition(_):
     return pn.Column(cal_error_metrics)
 
 
-# get_real_test_timeseries()
+#########
 ##FINAL##
+#########
 tabs = pn.Tabs(
     ("Welcome", pn.Column(welcome, image)
     ),
@@ -424,7 +515,7 @@ tabs = pn.Tabs(
                           ('Unsupervised Learning (Clustering)', pn.Row(pn.Column(clustering_slider, cluster_output),k_means_simple)),
                           ("TimeSeries Forecasting",pn.Row(timeseries_libs,pn.Column(ts_gif, ts_cv),timeseries_data_split)),
                           ("General ML Algorithms' Survey", pn.Column(general_ml_slider, general_ml_output)),
-                          ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts), pn.layout.Spacer(width=20), ts_competition)) #pn.widgets.DataFrame(predictions)
+                          ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.Column(widgets_submission, ts_competition_submission), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))) 
                          )
     )
     )
