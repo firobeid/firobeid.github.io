@@ -21,7 +21,7 @@ async function startApplication() {
     self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
     await self.pyodide.runPythonAsync(`
       import micropip
-      await micropip.install('${pkg, keep_going=True}');
+      await micropip.install('${pkg}', keep_going=True);
     `);
   }
   console.log("Packages loaded!");
