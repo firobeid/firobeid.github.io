@@ -40,7 +40,7 @@ from pathlib import Path
 import pandas as pd
 import hvplot.pandas
 from io import BytesIO
-from github import Github
+// from github import Github
 
 '''
 <meta http-equiv="pragma" content="no-cache" />
@@ -515,7 +515,7 @@ tabs = pn.Tabs(
                           ('Unsupervised Learning (Clustering)', pn.Row(pn.Column(clustering_slider, cluster_output),k_means_simple)),
                           ("TimeSeries Forecasting",pn.Row(timeseries_libs,pn.Column(ts_gif, ts_cv),timeseries_data_split)),
                           ("General ML Algorithms' Survey", pn.Column(general_ml_slider, general_ml_output)),
-                          ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.Column(widgets_submission, ts_competition_submission), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))) 
+                          ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))) 
                          )
     )
     )
