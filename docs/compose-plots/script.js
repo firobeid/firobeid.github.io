@@ -507,7 +507,7 @@ def github_cred():
     from github import Github
     repo_name = 'firobeid/TimeSeriesCompetitionTracker'
     # using an access token
-    g = Github("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")
+    g = Github("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")
     return g.get_repo(repo_name)
 
 def leaderboard_ts():
