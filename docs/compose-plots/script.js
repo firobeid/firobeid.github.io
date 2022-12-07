@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas']
+  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'github', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas']
   for (const pkg of env_spec) {
     const pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
     self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
@@ -40,7 +40,7 @@ from pathlib import Path
 import pandas as pd
 import hvplot.pandas
 from io import BytesIO
-# from github import Github
+
 
 '''
 <meta http-equiv="pragma" content="no-cache" />
@@ -179,12 +179,139 @@ def find_clusters(X, n_clusters, rseed=2):
 """,width = 500)
 
 ##GENERAL ML
-general_ml_slider = pn.widgets.IntSlider(start=1, end=11)
+general_ml_slider = pn.widgets.IntSlider(start=1, end=17)
 def general_ml_slideshow(index):
     url = f"https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Algo_Survey/{index}.png"
     return pn.pane.PNG(url,width = 800)
 general_ml_output = pn.bind(general_ml_slideshow, general_ml_slider)
 
+ML_algoes = pn.pane.Markdown("""
+### Some behind the Scenes Simple Implementations
+\`\`\`python
+
+import numpy as np
+
+def LogesticRegression_predict(features, weights, intercept):
+    dot_product = np.dot(features,weights.T) #or .reshape(-1) instead of T
+    z = intercept + dot_product 
+    sigmoid = 1 / (1 + np.exp(-z))
+    return sigmoid
+
+import pickle
+def save_model(model_name, model):
+    '''
+    model_name = name.pkl
+    joblib.load('name.pkl')
+    assign a variable to load model
+    '''
+    with open(str(model_name), 'wb') as f:
+        pickle.dump(model, f)
+\`\`\`
+
+### Criteria for Splitting in Decision Tress
+\`\`\`python
+def gini(rows):
+    '''
+    Calculate the Gini Impurity for a list of rows.
+
+    There are a few different ways to do this, I thought this one was
+    the most concise. See:
+    https://en.wikipedia.org/wiki/Decision_tree_learning#Gini_impurity
+    '''
+    counts = class_counts(rows)
+    impurity = 1
+    for lbl in counts:
+        prob_of_lbl = counts[lbl] / float(len(rows))
+        impurity -= prob_of_lbl**2
+    return impurity
+\`\`\`
+### Find Best Split Algo (Decision Tree)
+
+\`\`\`python
+def find_best_split(rows):
+    '''Find the best question to ask by iterating over every feature / value
+    and calculating the information gain.'''
+    best_gain = 0  # keep track of the best information gain
+    best_question = None  # keep train of the feature / value that produced it
+    current_uncertainty = gini(rows)
+    n_features = len(rows[0]) - 1  # number of columns
+
+    for col in range(n_features):  # for each feature
+
+        values = set([row[col] for row in rows])  # unique values in the column
+
+        for val in values:  # for each value
+
+            question = Question(col, val)
+
+            # try splitting the dataset
+            true_rows, false_rows = partition(rows, question)
+
+            # Skip this split if it doesn't divide the
+            # dataset.
+            if len(true_rows) == 0 or len(false_rows) == 0:
+                continue
+
+            # Calculate the information gain from this split
+            gain = info_gain(true_rows, false_rows, current_uncertainty)
+
+            # You actually can use '>' instead of '>=' here
+            # but I wanted the tree to look a certain way for our
+            # toy dataset.
+            if gain >= best_gain:
+                best_gain, best_question = gain, question
+
+    return best_gain, best_question
+\`\`\`
+
+#### Why we doing Label Encoding?
+- We apply One-Hot Encoding when:
+
+The categorical feature is not ordinal (like the countries above)
+The number of categorical features is less so one-hot encoding can be effectively applied
+
+- We apply Label Encoding when:
+
+The categorical feature is ordinal (like Jr. kg, Sr. kg, Primary school, high school)
+The number of categories is quite large as one-hot encoding can lead to high memory consumption
+\`\`\`python
+categorical_vars = list(df.columns[df.dtypes == object].values)
+obj_df = df.select_dtypes(include=['object']).copy() 
+map_dict = {col: {n: cat for n, cat in enumerate(obj_df[col].astype('category').cat.categories)} for col in obj_df}
+obj_df = pd.DataFrame({col: obj_df[col].astype('category').cat.codes for col in obj_df}, index=obj_df.index)
+
+\`\`\`
+""",width = 500)
+
+ML_metrics =  pn.pane.Markdown("""
+### Binary Classification Metrics Calculation
+
+\`\`\`python
+__author__: Firas Obeod
+def metrics(matrix):
+    '''
+    Each mean is appropriate for different types of data; for example:
+
+    * If values have the same units: Use the arithmetic mean.
+    * If values have differing units: Use the geometric mean.
+    * If values are rates: Use the harmonic mean.
+    '''
+    TN = matrix[0,0]
+    FP = matrix[0,1]
+    FN = matrix[1,0]
+    TP = matrix[1,1]
+    Specificity =  round(TN / (FP + TN), 4) # True Negative Rate 
+    FPR  = round(FP / (FP + TN), 4)
+    Confidence = round(1 - FPR, 4)
+    FDR = round(FP / (FP + TP), 4)
+    Precision = 1 - FDR # TP / (FP + TP)
+    Recall_Power = round(TP / (TP + FN), 4) #Sensitivity or TPR
+    G_mean = (Specificity * Recall_Power) **(1/2) 
+    Accuracy = round((TP + TN) / (TP +FP + TN + FN), 4)
+    return {'FPR':FPR, 'Confidence': Confidence, 'FDR' :FDR, 'Precision': 
+            Precision, 'Recall_Power':Recall_Power, 'Accuracy': Accuracy, "G_mean": G_mean}
+\`\`\`
+""", width = 500)
 ##TIMESERIES
 timeseries_libs = pn.pane.Markdown("""
 ## 10 Time-Series Python Libraries in 2022:
@@ -377,9 +504,10 @@ def get_real_test_timeseries():
     # return predictions
 
 def github_cred():
+    from github import Github
     repo_name = 'firobeid/TimeSeriesCompetitionTracker'
     # using an access token
-    g = Github("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")
+    g = Github("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")
     return g.get_repo(repo_name)
 
 def leaderboard_ts():
@@ -399,11 +527,12 @@ def leaderboard_ts():
     file_on_github = pd.read_csv("https://raw.githubusercontent.com/firobeid/TimeSeriesCompetitionTracker/main/leadership_board_ts.csv", delim_whitespace=" ") 
 
 def upload_scores():
-    global rmse_error, sub_name
+    global rmse_error, sub_name, file_on_github
     competitior_rank_file = 'leadership_board_ts.csv'
     repo = github_cred()
     submission = sub_name
     score = rmse_error
+    leaderboard_ts()
     file_on_github.loc[len(file_on_github.index)] = [submission, score]
 
     target_content = repo.get_contents(competitior_rank_file)
@@ -514,9 +643,9 @@ tabs = pn.Tabs(
                           ('Lets Get Things Straight',pn.Column(ml_slider, ml_output)),
                           ('Unsupervised Learning (Clustering)', pn.Row(pn.Column(clustering_slider, cluster_output),k_means_simple)),
                           ("TimeSeries Forecasting",pn.Row(timeseries_libs,pn.Column(ts_gif, ts_cv),timeseries_data_split)),
-                          ("General ML Algorithms' Survey", pn.Column(general_ml_slider, general_ml_output)),
+                          ("General ML Algorithms' Survey", pn.Row(pn.Column(general_ml_slider, general_ml_output),ML_algoes, ML_metrics)),
                           ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))) 
-                        #   ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.Column(widgets_submission, ts_competition_submission), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))) 
+                          #('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.Column(widgets_submission, ts_competition_submission), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))) 
                          )
     )
     )
