@@ -134,13 +134,20 @@ welcome = pn.pane.Markdown(
 """
 )
 #ML GENERAL
-ml_slider = pn.widgets.IntSlider(start=1, end=10)
+ml_slider = pn.widgets.IntSlider(start=1, end=11)
 def ml_slideshow(index):
     url = f"https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/{index}.png"
     return pn.pane.JPG(url, width = 500)
 
 ml_output = pn.bind(ml_slideshow, ml_slider)
 ml_app = pn.Column(ml_slider, ml_output)
+
+##DATA
+data_slider = pn.widgets.IntSlider(start=1, end=8)
+def data_slideshow(index):
+    url2 = f"https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/Data_Splitting/{index}.png"
+    return pn.pane.PNG(url2,width = 800)
+data_output = pn.bind(data_slideshow, data_slider)
 
 ##CLUSTERING
 clustering_slider = pn.widgets.IntSlider(start=1, end=36)
@@ -179,7 +186,7 @@ def find_clusters(X, n_clusters, rseed=2):
 """,width = 500)
 
 ##GENERAL ML
-general_ml_slider = pn.widgets.IntSlider(start=1, end=17)
+general_ml_slider = pn.widgets.IntSlider(start=1, end=40)
 def general_ml_slideshow(index):
     url = f"https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Algo_Survey/{index}.png"
     return pn.pane.PNG(url,width = 800)
@@ -281,20 +288,22 @@ map_dict = {col: {n: cat for n, cat in enumerate(obj_df[col].astype('category').
 obj_df = pd.DataFrame({col: obj_df[col].astype('category').cat.codes for col in obj_df}, index=obj_df.index)
 
 \`\`\`
-""",width = 500)
+""",width = 800)
 
 ML_metrics =  pn.pane.Markdown("""
 ### Binary Classification Metrics Calculation
 
 \`\`\`python
 __author__: Firas Obeod
-def metrics(matrix):
+def metrics(confusion_matrix):
     '''
     Each mean is appropriate for different types of data; for example:
 
     * If values have the same units: Use the arithmetic mean.
     * If values have differing units: Use the geometric mean.
     * If values are rates: Use the harmonic mean.
+    confusion_matrix = [[ TN, FP ],
+                        [ FN, TP ]]
     '''
     TN = matrix[0,0]
     FP = matrix[0,1]
@@ -311,6 +320,19 @@ def metrics(matrix):
     return {'FPR':FPR, 'Confidence': Confidence, 'FDR' :FDR, 'Precision': 
             Precision, 'Recall_Power':Recall_Power, 'Accuracy': Accuracy, "G_mean": G_mean}
 \`\`\`
+""", width = 500)
+
+
+
+prec_recall =  pn.pane.Markdown("""
+### Precision VS Recall Interpretation
+** Recall : How many of that class (1 or 0) does the model capture?
+** Precidion: How many are of those captured are correct prediction? 
+
+On a high level, Recall controls False Negative (i.e more important in medical field)
+and Precision controls False Positived (i.e more important in credit risk, traind, finance in general...)
+In marketing for example, we care about a balance between precision & Recall (We dont want to have high 
+recall meaning we would reach out to customers that we predict incorrectly eventually due to the low precision)
 """, width = 500)
 ##TIMESERIES
 timeseries_libs = pn.pane.Markdown("""
@@ -641,9 +663,10 @@ tabs = pn.Tabs(
     ),
     ("Zen of ML", pn.Tabs(("Title",pn.Row(title2,gif_pane, pn.Column(motivational,progress_))),
                           ('Lets Get Things Straight',pn.Column(ml_slider, ml_output)),
+                          ('Data Considerations!!',pn.Column(data_slider, data_output)),
                           ('Unsupervised Learning (Clustering)', pn.Row(pn.Column(clustering_slider, cluster_output),k_means_simple)),
                           ("TimeSeries Forecasting",pn.Row(timeseries_libs,pn.Column(ts_gif, ts_cv),timeseries_data_split)),
-                          ("General ML Algorithms' Survey", pn.Row(pn.Column(general_ml_slider, general_ml_output),ML_algoes, ML_metrics)),
+                          ("General ML Algorithms' Survey", pn.Row(pn.Column(general_ml_slider, general_ml_output),ML_algoes, pn.Column(ML_metrics, prec_recall))),
                           ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))) 
                           #('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.Column(widgets_submission, ts_competition_submission), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))) 
                          )
