@@ -134,7 +134,7 @@ welcome = pn.pane.Markdown(
 """
 )
 #ML GENERAL
-ml_slider = pn.widgets.IntSlider(start=1, end=11)
+ml_slider = pn.widgets.IntSlider(start=1, end=10)
 def ml_slideshow(index):
     url = f"https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/{index}.png"
     return pn.pane.JPG(url, width = 500)
@@ -334,6 +334,92 @@ and Precision controls False Positived (i.e more important in credit risk, train
 In marketing for example, we care about a balance between precision & Recall (We dont want to have high 
 recall meaning we would reach out to customers that we predict incorrectly eventually due to the low precision)
 """, width = 500)
+
+##DEEP LEARNING
+dl_slider = pn.widgets.IntSlider(start=1, end=7)
+def dl_slideshow(index):
+    url = f"https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/DL/{index}.png"
+    return pn.pane.PNG(url,width = 800)
+dl_output = pn.bind(dl_slideshow, dl_slider)
+lstm_gif = pn.pane.GIF('https://raw.githubusercontent.com/firobeid/firobeid.github.io/blob/main/docs/compose-plots/Resources/ML_lectures/DL/LSTM_ANIMATION.gif', alt_text = ' LSTM Animation')
+DL_tips = pn.pane.Markdown("""
+### Binary CrossEntropy Error (Loss/Error)
+\`\`\`python
+def Z(x):
+    return np.log(x / (1-x))
+def error(Z, Y):
+    return(max(Z,0) - Z*Y + np.log(1 + np.exp(-abs(Z))))
+
+y_pred = nn.predict(X_test)
+y_pred = np.array(list(map(Z, y_pred)))
+error = np.vectorize(error)
+
+all_errors = error(y_pred.ravel(), y_test)
+
+np.mean(all_errors)
+\`\`\`
+
+# What I Learned from my Personal Research?
+
+* If faced with [Failed to call ThenRnnBackward]:
+
+1. Allowing GPU Memory Growth
+2. Using batch_input_shape instead of input_shape
+3. Using drop_remainder=True when creating batches
+
+* If faced with Crashing IPyhton during Training:
+
+1. Simply put verbose=0 in all model.fit(...) instructions
+2. Install keras-tqdm to manage progress bar
+3. Redirect the output to a file
+
+### Modelling Tips for Neural Netwroks
+We can specify devices for storage and calculation, such as the CPU or GPU. By default, data are created in the main memory and then use the CPU for calculations.
+
+The deep learning framework requires all input data for calculation to be on the same device, be it CPU or the same GPU.
+
+You can lose significant performance by moving data without care. A typical mistake is as follows: computing the loss for every minibatch on the GPU and reporting it back to the user on the command line (or logging it in a NumPy ndarray) will trigger a global interpreter lock which stalls all GPUs. It is much better to allocate memory for logging inside the GPU and only move larger logs.
+
+- For Tensorflow-2: You can just use LSTM with no activation specified (ied default to tanh) function and it will automatically use the CuDNN version
+- Gradient clipping is a technique to prevent exploding gradients in very deep networks, usually in recurrent neural networks. ... This prevents any gradient to have norm greater than the threshold and thus the gradients are clipped.
+
+- PCO to intialize weights help in time computation reduction and global optima finding
+- Denoising input data helps predict small price changes
+- Epoch means one pass over the full training set
+- Batch means that you use all your data to compute the gradient during one iteration.
+- Mini-batch means you only take a subset of all your data during one iteration.
+- In the context of SGD, "Minibatch" means that the gradient is calculated across the entire batch before updating weights. If you are not using a "minibatch", every training example in a "batch" updates the learning algorithm's parameters independently.
+
+- Batch Gradient Descent. Batch size is set to the total number of examples in the training dataset. (batch_size = len(train))
+- Stochastic Gradient Descent. Batch size is set to one. (batch_size = 1)
+- Minibatch Gradient Descent. Batch size is set to more than one and less than the total number of examples in the training dataset. (batch_size = 32,64...)
+
+### Tips for Activation Functions:
+- When using the ReLU function for hidden layers, it is a good practice to use a "He Normal" or "He Uniform" weight initialization and scale input data to the range 0-1 (normalize) prior to training.
+- When using the Sigmoid function for hidden layers, it is a good practice to use a "Xavier Normal" or "Xavier Uniform" weight initialization (also referred to Glorot initialization, named for Xavier Glorot) and scale input data to the range 0-1 (e.g. the range of the activation function) prior to training.
+- When using the TanH function for hidden layers, it is a good practice to use a "Xavier Normal" or "Xavier Uniform" weight initialization (also referred to Glorot initialization, named for Xavier Glorot) and scale input data to the range -1 to 1 (e.g. the range of the activation function) prior to training.
+
+#### Tips for LSTM Inputs 
+- The LSTM input layer must be 3D.
+- The meaning of the 3 input dimensions are: samples, time steps, and features (sequences, sequence_length, characters).
+- The LSTM input layer is defined by the input_shape argument on the first hidden layer.
+- The input_shape argument takes a tuple of two values that define the number of time steps and features.
+- The number of samples is assumed to be 1 or more.
+- The reshape() function on NumPy arrays can be used to reshape your 1D or 2D data to be 3D.
+- The reshape() function takes a tuple as an argument that defines the new shape
+- The LSTM return the entire sequence of outputs for each sample (one vector per timestep per sample), if you set return_sequences=True.
+- Stateful RNN only makes sense if each input sequence in a batch starts exactly where the corresponding sequence in the previous batch left off. Our RNN model is stateless since each sample is different from the other and they dont form a text corpus but are separate headlines.
+
+#### Tips for Embedding Layer
+- Gives relationship between characters.
+- Dense vector representation (n-Dimensional) of float point values. Map(char/byte) to a dense vector.
+- Embeddings are trainable weights/paramaeters by the model equivalent to weights learned by dense layer.
+- In our case each unique character/byte is represented with an N-Dimensional vector of floating point values, where the learned embedding forms a lookup table by "looking up" each characters dense vector in the table to encode it.
+- A simple integer encoding of our characters is not efficient for the model to interpret since a linear classifier only learns the weights for a single feature but not the relationship (probability distribution) between each feature(characters) or there encodings.
+- A higher dimensional embedding can capture fine-grained relationships between characters, but takes more data to learn.(256-Dimensions our case)
+
+
+""", width = 1000)
 ##TIMESERIES
 timeseries_libs = pn.pane.Markdown("""
 ## 10 Time-Series Python Libraries in 2022:
@@ -525,12 +611,12 @@ def get_real_test_timeseries():
         # New_Refit_routing = New_Refit_routing[[cols for cols in New_Refit_routing.columns if New_Refit_routing[cols].nunique() >= 2]] #remove columns with less then 2 unique values
     # return predictions
 
-def github_cred():
-    # from github import Github
-    repo_name = 'firobeid/TimeSeriesCompetitionTracker'
-    # using an access token
-    g = Github("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")
-    return g.get_repo(repo_name)
+# def github_cred():
+#     from github import Github
+#     repo_name = 'firobeid/TimeSeriesCompetitionTracker'
+#     # using an access token
+#     g = Github("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")
+#     return g.get_repo(repo_name)
 
 def leaderboard_ts():
     global file_on_github
@@ -667,8 +753,9 @@ tabs = pn.Tabs(
                           ('Unsupervised Learning (Clustering)', pn.Row(pn.Column(clustering_slider, cluster_output),k_means_simple)),
                           ("TimeSeries Forecasting",pn.Row(timeseries_libs,pn.Column(ts_gif, ts_cv),timeseries_data_split)),
                           ("General ML Algorithms' Survey", pn.Row(pn.Column(general_ml_slider, general_ml_output),ML_algoes, pn.Column(ML_metrics, prec_recall))),
-                          ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))) 
-                          #('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.Column(widgets_submission, ts_competition_submission), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))) 
+                          ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))), 
+                        #   ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.Column(widgets_submission, ts_competition_submission), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))) 
+                          ('Neural Netwroks Visit',pn.Row(pn.Column(dl_slider, dl_output), DL_tips))
                          )
     )
     )
