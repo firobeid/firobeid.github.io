@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'github', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas', 'psutil']
+  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas', 'psutil']
   for (const pkg of env_spec) {
     const pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
     self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
@@ -727,7 +727,7 @@ def get_real_test_timeseries():
     # return predictions
 
 def github_cred():
-    from github import Github
+    # from github import Github
     repo_name = 'firobeid/TimeSeriesCompetitionTracker'
     # using an access token
     g = Github("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")
