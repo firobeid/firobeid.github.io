@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas', 'psutil']
+  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas']
   for (const pkg of env_spec) {
     const pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
     self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
@@ -41,7 +41,6 @@ import pandas as pd
 import hvplot.pandas
 from io import BytesIO, StringIO
 import sys
-import psutil
 import time
 
 
@@ -180,8 +179,9 @@ run_python_comp = pn.widgets.Button(name="Click to Check Code Runtime/Accuracy R
 
 def time_it():
     return  pd.to_datetime(time.time(),unit = 's')
-def memory()->str:
-    return print('used: {}% free: {:.2f}GB'.format(psutil.virtual_memory().percent, float(psutil.virtual_memory().free)/1024**3))#@ 
+# def memory()->str:
+#     import psutil
+#     return print('used: {}% free: {:.2f}GB'.format(psutil.virtual_memory().percent, float(psutil.virtual_memory().free)/1024**3))#@ 
 
 def python_competition():
     names = ['St. Albans',
@@ -208,12 +208,12 @@ def python_competition():
         sys.stdout = codeOut
         sys.stderr = codeErr
         start = time_it()
-        start_memory = float(psutil.virtual_memory().free)/1024**3
+        # start_memory = float(psutil.virtual_memory().free)/1024**3
         exec(code)
         end = time_it()
-        end_memory = float(psutil.virtual_memory().free)/1024**3
+        # end_memory = float(psutil.virtual_memory().free)/1024**3
         loop_time = end - start
-        loop_memory = start_memory - end_memory
+        # loop_memory = start_memory - end_memory
         # restore stdout and stderr
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
@@ -227,7 +227,7 @@ def python_competition():
         codeErr.close()
         accuracy = len(set(s).intersection(set(actual_output)))/len(set(actual_output))
         results = pd.DataFrame({'Results(Time+Space_Complexity':{'Nanoseconds': loop_time.nanoseconds, 'Microseconds': loop_time.microseconds
-                            ,'Seconds': loop_time.seconds,'Total_Seconds':loop_time.total_seconds() ,'Memory': '%d MB' % (loop_memory* 1024), 'Accuracy': '%.2f' % (accuracy*100)}})
+                            ,'Seconds': loop_time.seconds,'Total_Seconds':loop_time.total_seconds() ,'Accuracy': '%.2f' % (accuracy*100)}}) #'Memory': '%d MB' % (loop_memory* 1024),
         return pn.widgets.DataFrame(results.sort_index(), width=600, height=1000, name = 'Results')
     except Exception as e: 
         return pn.pane.Markdown(f"""{e}""")
