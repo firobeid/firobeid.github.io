@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas']
+  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'github', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas', 'psutil']
   for (const pkg of env_spec) {
     const pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
     self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
@@ -39,7 +39,10 @@ import panel as pn
 from pathlib import Path
 import pandas as pd
 import hvplot.pandas
-from io import BytesIO
+from io import BytesIO, StringIO
+import sys
+import psutil
+import time
 
 
 '''
@@ -100,6 +103,14 @@ title = pn.pane.Markdown(
 """,
     width=1000,
 )
+
+title_0 = pn.pane.Markdown(
+    """
+# Intro to Python : Text Munging & Cleaning
+""",
+    width=800,  
+)
+
 title1 = pn.pane.Markdown(
     """
 # Hospital Data Analysis
@@ -133,6 +144,110 @@ welcome = pn.pane.Markdown(
 
 """
 )
+
+##Python Competition##
+python_intro = pn.pane.Markdown(
+    """
+# Essence of Data Cleaning in Python
+
+* Write a script/function that ingests the following list and addresses all unique string formatting:
+\`\`\`
+names = ['St. Albans',
+        'St. Albans', 
+        'St Albans', 
+        'St.Ablans',
+        "St.albans", 
+        "St. Alans", 'S.Albans',
+        'St..Albans', 'S.Albnas', 
+        'St. Albnas', "St.Al bans", 'St.Algans',
+        "Sl.Albans", 'St. Allbans', "St, Albans", 'St. Alban', 'St. Alban']
+\`\`\`
+
+* The intended output is the following, where you clean and split all into \`Sx Axxxx\` in one shot:
+\`\`\`
+['St Albans', 'St Albans', 'StAlbans', 'St Ablans', 
+ 'St Albans', 'St Alans', 'S Albans', 'St Albans', 'S Albnas', 
+ 'St Albnas', 'St Albans', 'St Algans', 'Sl Albans', 'St Allbans', 'St Albans', 'St Alban', 'St Alban']
+\`\`\`
+
+
+***\`Cleaning text without using any package\`***
+
+"""
+)
+code_submission = pn.widgets.TextAreaInput(value="", height=300, name='Paste your code below (remember to print(results)')
+run_python_comp = pn.widgets.Button(name="Click to Check Code Runtime/Accuracy Results")
+
+def time_it():
+    return  pd.to_datetime(time.time(),unit = 's')
+def memory()->str:
+    return print('used: {}% free: {:.2f}GB'.format(psutil.virtual_memory().percent, float(psutil.virtual_memory().free)/1024**3))#@ 
+
+def python_competition():
+    names = ['St. Albans',
+        'St. Albans', 
+        'St Albans', 
+        'St.Ablans',
+        "St.albans", 
+        "St. Alans", 'S.Albans',
+        'St..Albans', 'S.Albnas', 
+        'St. Albnas', "St.Al bans", 'St.Algans',
+        "Sl.Albans", 'St. Allbans', "St, Albans", 'St. Alban', 'St. Alban']
+    actual_output = ['St Albans', 'St Albans', 'StAlbans', 'St Ablans','St Albans', 'St Alans', 'S Albans', 'St Albans', 'S Albnas', 
+                     'St Albnas', 'St Albans', 'St Algans', 'Sl Albans', 'St Allbans', 'St Albans', 'St Alban', 'St Alban']
+
+    if str(code_submission.value) == "":
+        # return pn.pane.Markdown(f"""""")
+        return pn.pane.Alert("""###Please pass in your code above!""", alert_type="warning",)
+    try:
+        code = str(code_submission.value)
+        # create file-like string to capture output
+        codeOut = StringIO()
+        codeErr = StringIO()
+        # capture output and errors
+        sys.stdout = codeOut
+        sys.stderr = codeErr
+        start = time_it()
+        start_memory = float(psutil.virtual_memory().free)/1024**3
+        exec(code)
+        end = time_it()
+        end_memory = float(psutil.virtual_memory().free)/1024**3
+        loop_time = end - start
+        loop_memory = start_memory - end_memory
+        # restore stdout and stderr
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__
+
+        # s = codeErr.getvalue()
+        # print("error:\\n%s\\n" % s)
+        s = codeOut.getvalue()
+        s = eval(s)
+
+        codeOut.close()
+        codeErr.close()
+        accuracy = len(set(s).intersection(set(actual_output)))/len(set(actual_output))
+        results = pd.DataFrame({'Results(Time+Space_Complexity':{'Nanoseconds': loop_time.nanoseconds, 'Microseconds': loop_time.microseconds
+                            ,'Seconds': loop_time.seconds,'Total_Seconds':loop_time.total_seconds() ,'Memory': '%d MB' % (loop_memory* 1024), 'Accuracy': '%.2f' % (accuracy*100)}})
+        return pn.widgets.DataFrame(results.sort_index(), width=600, height=1000, name = 'Results')
+    except Exception as e: 
+        return pn.pane.Markdown(f"""{e}""")
+
+py_widgets_submission = pn.WidgetBox(
+    pn.panel("""# Check your Code""", margin=(0, 10)),
+    pn.panel('* Past your code below, no need to to add the original list.', margin=(0, 10)),
+    pn.panel('* Please end your code with a print() of your results list. Only put one print() at the end and no other print() should exist', margin=(0, 10)),
+    pn.panel('* If you got an error, remove all spaces between consecutive lines', margin=(0, 10)),
+    code_submission,
+    run_python_comp, 
+    pn.pane.Alert("""##                Your Code Submission Results""", alert_type="success",),
+    width = 500
+)
+
+
+@pn.depends(run_python_comp.param.clicks)
+def python_competition_submission(_):
+    return pn.Column(python_competition)
+
 #ML GENERAL
 ml_slider = pn.widgets.IntSlider(start=1, end=10)
 def ml_slideshow(index):
@@ -611,12 +726,12 @@ def get_real_test_timeseries():
         # New_Refit_routing = New_Refit_routing[[cols for cols in New_Refit_routing.columns if New_Refit_routing[cols].nunique() >= 2]] #remove columns with less then 2 unique values
     # return predictions
 
-# def github_cred():
-#     from github import Github
-#     repo_name = 'firobeid/TimeSeriesCompetitionTracker'
-#     # using an access token
-#     g = Github("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")
-#     return g.get_repo(repo_name)
+def github_cred():
+    from github import Github
+    repo_name = 'firobeid/TimeSeriesCompetitionTracker'
+    # using an access token
+    g = Github("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")
+    return g.get_repo(repo_name)
 
 def leaderboard_ts():
     global file_on_github
@@ -740,6 +855,12 @@ def ts_competition(_):
 tabs = pn.Tabs(
     ("Welcome", pn.Column(welcome, image)
     ),
+    ("Pythonic Text Munging",pn.Tabs(("Title",pn.Column(pn.Row(title_0))),
+                                     ("Coding Competition", pn.Row(python_intro,pn.layout.Spacer(width=20), pn.Column(py_widgets_submission, python_competition_submission)))
+                                     )
+    
+    
+    ),
     ("DataViz",pn.Tabs(("Title",pn.Column(pn.Row(title1),hvplot_snip)),
                     ("total_payments_by_state", pn.Row(plot1)),
                     ("sorted_total_payments_by_state", pn.Row(plot2)),
@@ -754,11 +875,12 @@ tabs = pn.Tabs(
                           ("TimeSeries Forecasting",pn.Row(timeseries_libs,pn.Column(ts_gif, ts_cv),timeseries_data_split)),
                           ("General ML Algorithms' Survey", pn.Row(pn.Column(general_ml_slider, general_ml_output),ML_algoes, pn.Column(ML_metrics, prec_recall))),
                           ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))), 
-                        #   ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.Column(widgets_submission, ts_competition_submission), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))) 
+                        #   ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.Column(widgets_submission, ts_competition_submission), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))), 
                           ('Neural Netwroks Visit',pn.Row(pn.Column(dl_slider, dl_output), DL_tips))
                          )
     )
     )
+    
 
 audio = pn.pane.Audio('http://ccrma.stanford.edu/~jos/mp3/pno-cs.mp3', name='Audio')
 pn.Column(pn.Row(title), tabs, pn.Row(pn.pane.Alert("Enjoy some background classic", alert_type="success"),audio), ).servable(target='main')
