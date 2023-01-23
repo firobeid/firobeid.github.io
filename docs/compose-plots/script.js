@@ -180,7 +180,7 @@ run_python_comp = pn.widgets.Button(name="Click to Check Code Runtime/Accuracy R
 def time_it():
     return  pd.to_datetime(time.time(),unit = 's')
 # def memory()->str:
-#     import psutil
+#     psutil
 #     return print('used: {}% free: {:.2f}GB'.format(psutil.virtual_memory().percent, float(psutil.virtual_memory().free)/1024**3))#@ 
 
 def python_competition():
@@ -193,14 +193,16 @@ def python_competition():
         'St..Albans', 'S.Albnas', 
         'St. Albnas', "St.Al bans", 'St.Algans',
         "Sl.Albans", 'St. Allbans', "St, Albans", 'St. Alban', 'St. Alban']
-    actual_output = ['St Albans', 'St Albans', 'StAlbans', 'St Ablans','St Albans', 'St Alans', 'S Albans', 'St Albans', 'S Albnas', 
+    actual_output = ['St Albans', 'St Albans', 'St Albans', 'St Ablans','St Albans', 'St Alans', 'S Albans', 'St Albans', 'S Albnas', 
                      'St Albnas', 'St Albans', 'St Algans', 'Sl Albans', 'St Allbans', 'St Albans', 'St Alban', 'St Alban']
 
     if str(code_submission.value) == "":
         # return pn.pane.Markdown(f"""""")
         return pn.pane.Alert("""###Please pass in your code above!""", alert_type="warning",)
     try:
-        code = str(code_submission.value)
+        # code = str(code_submission.value.decode("utf-8"))
+        code = code_submission.value
+        # print(code)
         # create file-like string to capture output
         codeOut = StringIO()
         codeErr = StringIO()
