@@ -89,6 +89,8 @@ def closest(lst, K):
         return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-K))]
     except:
         return K
+control_max = lambda x: x.max() * 1.01 if x.max() > 0 else (x.max() * 0.99 if x.max() < 0 else x.max() + 0.01)
+control_min = lambda x: x.min() * 0.99 if x.min() > 0 else (x.min() * 1.01 if x.min() < 0 else x.min() - 0.01)
 
 def get_data():
     global target, New_Refit_routing
@@ -103,11 +105,12 @@ def get_data():
         New_Refit_routing.write(file_input.value)
         New_Refit_routing.seek(0)
         try:
-            New_Refit_routing = pd.read_csv(New_Refit_routing, error_bad_lines=False)#.set_index("id")
+            New_Refit_routing = pd.read_csv(New_Refit_routing, error_bad_lines=False).apply(pd.to_numeric, errors='ignore')#.set_index("id")
         except:
             New_Refit_routing = pd.read_csv(New_Refit_routing, error_bad_lines=False)
         target = None
         New_Refit_routing = New_Refit_routing.select_dtypes(exclude=['datetime', "category","object"])
+        New_Refit_routing = New_Refit_routing.replace([np.inf, -np.inf], np.nan)
         # New_Refit_routing = New_Refit_routing[[cols for cols in New_Refit_routing.columns if New_Refit_routing[cols].nunique() >= 2]] #remove columns with less then 2 unique values
     return target, New_Refit_routing
 
@@ -126,6 +129,8 @@ def stats_():
     global stats
     stats = New_Refit_routing.describe().T
     stats["Missing_Values(%)"] = (New_Refit_routing.isna().sum() / len(New_Refit_routing)) * 100
+    stats = pd.concat([stats, New_Refit_routing.quantile(q = [.01, .05, .95, .99]).T.rename(columns = {0.01: '1%', 0.05: '5%', 0.95: '95%', 0.99:'99%'})], axis = 1)
+    stats = stats[['count', 'mean', 'std', 'min', '1%', '5%' ,'25%', '50%', '75%', '95%', '99%', 'max','Missing_Values(%)']]
     stats = stats.round(4).astype(str)
 
 def cuts_(target):
@@ -142,6 +147,8 @@ def cuts_(target):
     outlier_removed_stats = df.describe().T
     remove_feature = list(outlier_removed_stats[(outlier_removed_stats["mean"]==outlier_removed_stats["max"]) & 
                         (outlier_removed_stats["mean"]==outlier_removed_stats["min"])].index)
+    outlier_removed_stats = pd.concat([outlier_removed_stats, df.quantile(q = [.01, .05, .95, .99]).T.rename(columns = {0.01: '1%', 0.05: '5%', 0.95: '95%', 0.99:'99%'})], axis = 1)
+    outlier_removed_stats = outlier_removed_stats[['count', 'mean', 'std', 'min', '1%', '5%' ,'25%', '50%', '75%', '95%', '99%', 'max']]                    
     outlier_removed_stats = outlier_removed_stats.round(4).astype(str)
 
     neglect += remove_feature
@@ -149,7 +156,7 @@ def cuts_(target):
 
     
     df[cols] = df[cols].apply(lambda col: pd.cut(col.fillna(np.nan),
-                                                bins = pd.interval_range(start=col.min(), end=col.max(), 
+                                                bins = pd.interval_range(start=float(np.apply_along_axis(control_min , 0,col.dropna())), end = float(np.apply_along_axis(control_max , 0,col.dropna())), 
                                                 periods = 10), include_lowest=True).cat.add_categories(pd.Categorical(f"Missing_{col.name}")).fillna(f"Missing_{col.name}"), axis=0)
 
 
@@ -163,7 +170,7 @@ def cuts_(target):
     test = test.rename(columns={"index":"IntervalCuts", "column":"feature", "value":"Count_Pct"})
     test.Count_Pct = test.Count_Pct.round(4)
     test.IntervalCuts = test.IntervalCuts.astype(str)
-    test.IntervalCuts = test.IntervalCuts.apply(lambda x: "("+str(round(float(x.split(",")[0].strip("(")),4)) +', ' + str(round(float(x.split(",")[-1].strip("]")),4)) +"]" if (x.split(",")[0].strip("(")[0]).isdigit() else x)
+    test.IntervalCuts = test.IntervalCuts.apply(lambda x: "("+str(round(float(x.split(",")[0].strip("(")),4)) +', ' + str(round(float(x.split(",")[-1].strip("]")),4)) +"]" if (x.split(",")[0].strip("(").strip("-")[0]).isdigit() else x)
 
     test2 = pd.concat([df.groupby(col)[target].mean().fillna(0) for col in df[cols]], axis = 1)
     test2.columns = cols
@@ -171,7 +178,7 @@ def cuts_(target):
     test2 = test2.rename(columns={"index":"IntervalCuts", "column":"feature", "value":"Bad_Rate_Pct"})
     test2.Bad_Rate_Pct = test2.Bad_Rate_Pct.round(4)
     test2.IntervalCuts = test2.IntervalCuts.astype(str)
-    test2.IntervalCuts = test2.IntervalCuts.apply(lambda x: "("+str(round(float(x.split(",")[0].strip("(")),4)) +', ' + str(round(float(x.split(",")[-1].strip("]")),4)) +"]" if (x.split(",")[0].strip("(")[0]).isdigit() else x)
+    test2.IntervalCuts = test2.IntervalCuts.apply(lambda x: "("+str(round(float(x.split(",")[0].strip("(")),4)) +', ' + str(round(float(x.split(",")[-1].strip("]")),4)) +"]" if (x.split(",")[0].strip("(").strip("-")[0]).isdigit() else x)
 
 
     test["index"] = test["feature"] + "_" + test["IntervalCuts"]
@@ -229,6 +236,7 @@ def qcuts_(target):
     test_q = test_q.rename(columns={"index":"IntervalCuts", "column":"feature", "value":"Count_Pct"})
     test_q.Count_Pct = test_q.Count_Pct.round(4)
     test_q.IntervalCuts = test_q.IntervalCuts.astype(str)
+    # test_q.IntervalCuts = test_q.IntervalCuts.apply(lambda x: "("+str(round(float(x.split(",")[0].strip("(")),4)) +', ' + str(round(float(x.split(",")[-1].strip("]")),4)) +"]" if (x.split(",")[0].strip("(")[0]).isdigit() else x)
 
 
     test2_q = pd.concat([df2.groupby(col)[target].mean().fillna(0) for col in df2[cols]], axis = 1)
@@ -237,6 +245,7 @@ def qcuts_(target):
     test2_q = test2_q.rename(columns={"index":"IntervalCuts", "column":"feature", "value":"Bad_Rate_Pct"})
     test2_q.Bad_Rate_Pct = test2_q.Bad_Rate_Pct.round(4)
     test2_q.IntervalCuts = test2_q.IntervalCuts.astype(str)
+    # test2_q.IntervalCuts = test2_q.IntervalCuts.apply(lambda x: "("+str(round(float(x.split(",")[0].strip("(")),4)) +', ' + str(round(float(x.split(",")[-1].strip("]")),4)) +"]" if (x.split(",")[0].strip("(")[0]).isdigit() else x)
 
     test_q["index"] = test_q["feature"] + "_" + test_q["IntervalCuts"]
     test_q = test_q.set_index("index")
@@ -294,6 +303,7 @@ def run(_):
         # site_url="",
         site="CreditRisk",
         title="Feature Distribution & Statistics",
+        # favicon="https://raw.githubusercontent.com/opploans/DS_modelling_tools/main/docs/Resources/favicon.ico?token=GHSAT0AAAAAABYR5F6VDZ2PU33UY6NN7NQEY3C2ASA"
         # favicon="",
     )
     
