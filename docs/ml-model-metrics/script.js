@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'colorama', 'dateutil', 'holoviews>=1.15.1', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas', 'scipy', 'scikit-learn']
+  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'colorama', 'holoviews>=1.15.1', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas', 'scipy', 'scikit-learn']
   for (const pkg of env_spec) {
     const pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
     self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
@@ -133,20 +133,20 @@ def add_extremes_OOT(df, name:str, score:str):
     df.loc[(len(df.index)-1), [name, score]] = ["Extreme_Case_Min", 0.9999]
     return df
 
-def last_3months(df):
-    from datetime import datetime
-    from dateutil.relativedelta import relativedelta
-    from pandas.tseries.offsets import MonthEnd
+# def last_3months(df):
+#     from datetime import datetime
+#     from dateutil.relativedelta import relativedelta
+#     from pandas.tseries.offsets import MonthEnd
 
-    end_of_month = ((pd.Timestamp(datetime.now().strftime('%Y-%m-%d')) - pd.Timedelta(70, unit='D')) + relativedelta(months=-1)) + MonthEnd(0)
-    start_of_month = end_of_month + MonthEnd(-3) + relativedelta(days=1)
-    end_of_month = end_of_month +relativedelta(hours=23, minutes=59, seconds=59)
-    print('Start Month %r --- End Month %r' % (start_of_month, end_of_month))
-    try:
-        date_column = list(filter(lambda x:x.endswith("DATE"),gains_df.columns))[0]
-    except:
-        date_column = 'CREATED_DATE'
-    return df[df[date_column].between(start_of_month, end_of_month)]
+#     end_of_month = ((pd.Timestamp(datetime.now().strftime('%Y-%m-%d')) - pd.Timedelta(70, unit='D')) + relativedelta(months=-1)) + MonthEnd(0)
+#     start_of_month = end_of_month + MonthEnd(-3) + relativedelta(days=1)
+#     end_of_month = end_of_month +relativedelta(hours=23, minutes=59, seconds=59)
+#     print('Start Month %r --- End Month %r' % (start_of_month, end_of_month))
+#     try:
+#         date_column = list(filter(lambda x:x.endswith("DATE"),gains_df.columns))[0]
+#     except:
+#         date_column = 'CREATED_DATE'
+#     return df[df[date_column].between(start_of_month, end_of_month)]
 
 def gains_table_proba(data=None,target=None, prob=None):
     data = data.copy()
