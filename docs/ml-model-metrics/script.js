@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'colorama', 'holoviews>=1.15.1', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas', 'scipy', 'scikit-learn', 'tqdm']
+  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'colorama', 'holoviews>=1.15.1', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas', 'scipy', 'scikit-learn', 'tqdm', 'xlsxwriter']
   for (const pkg of env_spec) {
     const pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
     self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
@@ -47,6 +47,7 @@ from io import BytesIO
 import panel as pn
 import holoviews as hv
 import hvplot.pandas
+import xlsxwriter
 from warnings import filterwarnings
 '''
 development env: panel serve script.py --autoreload
@@ -59,9 +60,9 @@ pn.extension( "plotly", template="fast")
 
 pn.state.template.param.update(
     # site_url="",
-    # site="",
+    site="ModelMonitor",
     title="Classification Model Metrics",
-    favicon="https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/favicon.ico",
+    # favicon="https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/favicon.ico",
 )
 #######################
 ###UTILITY FUNCTIONS###
@@ -364,23 +365,24 @@ def lift_init_plots(df:pd.DataFrame, is_baseline = True):
     standalone_scores_OOT['BINS'] = standalone_scores_OOT['BINS']
     standalone_scores_OOT.sort_values(['SCORE', 'SCORE_BAND'], inplace = True)
     return standalone_scores_OOT
+
 def save_csv(df, metric):
     from io import StringIO
     sio = StringIO()
     df.to_csv(sio)
     sio.seek(0)
-    return pn.widgets.FileDownload(sio, embed=True, filename='%s.csv'%metric, button_type="primary")
+    return pn.widgets.FileDownload(sio, embed=True, filename='%s.csv'%metric)
 
-# def get_xlsx(df1,df2,df3):
-#     from io import BytesIO
-#     output = BytesIO()
-#     writer = pd.ExcelWriter(output, engine='xlsxwriter')
-#     df1.to_excel(writer, sheet_name="PSI")
-#     df2.to_excel(writer, sheet_name="AUC")
-#     df3.to_excel(writer, sheet_name="KS")
-#     writer.save() # Important!
-#     output.seek(0) # Important!
-#     return pn.widgets.FileDownload(output, embed=True, filename='results.csv', button_type="primary")
+def get_xlsx(df1,df2,df3):
+    from io import BytesIO
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    df1.to_excel(writer, sheet_name="PSI")
+    df2.to_excel(writer, sheet_name="AUC")
+    df3.to_excel(writer, sheet_name="KS")
+    writer.save() # Important!
+    output.seek(0) # Important!
+    return pn.widgets.FileDownload(output,embed=True, filename='results.csv', button_type="primary")
 
 ###############################
 ###END OFF UTILITY FUNCTIONS###
@@ -392,16 +394,26 @@ text = """
 ###  GNU General Public License v3.0 (GPL-3.0)
 #### Developed while working at [OppFi Inc.](https://www.oppfi.com/)
 
-This tool performs feature binning by equal intervals and by equal pouplations in each interval vs bad rate/target binary variable
-To get the feature deep dive feature distribution:
+This tool performs ML model ,in production, monitoring across time, 
+where production weeks/months/quarters are compared too a selective baseline.
 
-1. Upload a CSV (only numerical data)
+1. Upload a CSV containing:
 
-2. Choose & press on the binary (0 / 1) target column in the \`Select Target Variable\` section below
+**(Date)** Highly Recommended but **optional** 
+**(Score)** Probability Predictions  
+**(Target)** Binary Target/True Label
+ 
+2. Check the box if you CSV has a DATE column, otherwise dates are generated based on current timestamp and spanning back by 
+timedelta of csv length in hourly frequency.
 
-3. Press Run Analysis
+3. Choose & press the right columns in the \`Select Boxes\` below when you upload a csv
 
-4. Wait few seconds and analyze the updated charts
+4. Select a baseline date slice **mandatory**. If your baseline is from a different time then the production time,
+make sure to append it to the csv before uploading.
+
+5. Press Get Metrics
+
+6. Wait few seconds and analyze the updated charts
 """
 
 
@@ -413,7 +425,7 @@ To get the feature deep dive feature distribution:
 
 file_input = pn.widgets.FileInput(align='center')
 date_selector = pn.widgets.Select(name='Select Date Column',)
-check_date = pn.widgets.Checkbox(name = 'Check Box') # T/F
+check_date = pn.widgets.Checkbox(name = '<--') # T/F
 target_selector = pn.widgets.Select(name='Select Target Variable(True Label)')
 score_selector = pn.widgets.Select(name='Select Predictions Column(Raw Probaility)')
 period_metrics = pn.widgets.Select(name='Select Period', options = ['MONTHLY','WEEKLY', 'QUARTERLY'])
@@ -424,8 +436,7 @@ random_seed = pn.widgets.IntSlider(name='Random Seed for Random Generated Data (
 
 button = pn.widgets.Button(name='Get Metrics')
 widgets = pn.WidgetBox(
-    pn.panel(text, margin=(0, 10)),
-    pn.panel('Upload a CSV containing (Date) Highly Recommended but **optional** (Score) Probability Predictions and (y) Binary Target(True Label):', margin=(0, 10)),
+    pn.panel(text, margin=(0, 20)),
     file_input,
     pn.panel('Check if your data has a date column \\n (otherwise keep it empty)'),
     check_date,
@@ -589,7 +600,7 @@ def run(_):
     ks_b = baseline.groupby([period_metrics.value]).apply(ks)
     ks_p = prod.groupby([period_metrics.value]).apply(ks)
     baseline_ks = pn.widgets.DataFrame(ks_b)
-    prod_ks = pn.widgets.DataFrame(ks_p, width=600, height=1000 ,name = 'AUC') #autosize_mode='fit_columns'
+    prod_ks = pn.widgets.DataFrame(ks_p,name = 'AUC') #autosize_mode='fit_columns'
 
     baseline_lift_raw = lift_init(df = baseline)
     baseline_lift_raw = baseline_lift_raw.rename(columns = {'Baseline': b_label})
@@ -642,7 +653,7 @@ def run(_):
                     pn.Row(prod_auc, baseline_auc, save_csv(pd.concat([auc_b, auc_p], axis = 0), 'AUC')),
                     '# KS',
                     pn.Row(prod_ks, baseline_ks, save_csv(pd.concat([ks_b, ks_p], axis = 0), 'KS')),
-                    #get_xlsx(psi_, pd.concat([auc_b, auc_p], axis = 0), pd.concat([ks_b, ks_p], axis = 0)), 
+                    get_xlsx(psi_, pd.concat([auc_b, auc_p], axis = 0), pd.concat([ks_b, ks_p], axis = 0)), 
                              )
         ), #sizing_mode='stretch_width'
         ('Charts', pn.Column(roc_plot.opts(legend_position = 'bottom_right') ,
