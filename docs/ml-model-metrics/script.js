@@ -371,16 +371,16 @@ def save_csv(df, metric):
     sio.seek(0)
     return pn.widgets.FileDownload(sio, embed=True, filename='%s.csv'%metric, button_type="primary")
 
-def get_xlsx(df1,df2,df3):
-    from io import BytesIO
-    output = BytesIO()
-    writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    df1.to_excel(writer, sheet_name="PSI")
-    df2.to_excel(writer, sheet_name="AUC")
-    df3.to_excel(writer, sheet_name="KS")
-    writer.save() # Important!
-    output.seek(0) # Important!
-    return pn.widgets.FileDownload(output, embed=True, filename='results.csv', button_type="primary")
+# def get_xlsx(df1,df2,df3):
+#     from io import BytesIO
+#     output = BytesIO()
+#     writer = pd.ExcelWriter(output, engine='xlsxwriter')
+#     df1.to_excel(writer, sheet_name="PSI")
+#     df2.to_excel(writer, sheet_name="AUC")
+#     df3.to_excel(writer, sheet_name="KS")
+#     writer.save() # Important!
+#     output.seek(0) # Important!
+#     return pn.widgets.FileDownload(output, embed=True, filename='results.csv', button_type="primary")
 
 ###############################
 ###END OFF UTILITY FUNCTIONS###
@@ -642,7 +642,7 @@ def run(_):
                     pn.Row(prod_auc, baseline_auc, save_csv(pd.concat([auc_b, auc_p], axis = 0), 'AUC')),
                     '# KS',
                     pn.Row(prod_ks, baseline_ks, save_csv(pd.concat([ks_b, ks_p], axis = 0), 'KS')),
-                    get_xlsx(psi_, pd.concat([auc_b, auc_p], axis = 0), pd.concat([ks_b, ks_p], axis = 0)), 
+                    #get_xlsx(psi_, pd.concat([auc_b, auc_p], axis = 0), pd.concat([ks_b, ks_p], axis = 0)), 
                              )
         ), #sizing_mode='stretch_width'
         ('Charts', pn.Column(roc_plot.opts(legend_position = 'bottom_right') ,
