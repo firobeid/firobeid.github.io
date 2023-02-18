@@ -302,7 +302,7 @@ def lift_init(df:pd.DataFrame, baseline = None, is_baseline = True):
         lift_chart_data_OOT = lift_chart_data_OOT.append(fd)
     if is_baseline == True:
         lift_chart_data_OOT[period_metrics.value] = 'Baseline'
-        
+       
     standalone_scores_OOT = lift_chart_data_OOT.melt(id_vars=[period_metrics.value,'BINS','SCORE_BAND'],value_vars=cols,
                                         var_name='SCORE', 
                                         value_name='BAD_RATE').dropna().reset_index(drop = True).copy()
@@ -317,7 +317,7 @@ def lift_init(df:pd.DataFrame, baseline = None, is_baseline = True):
     # standalone_scores_OOT[['BINS', 'SCORE_BAND']] = standalone_scores_OOT[['BINS', 'SCORE_BAND']]#.astype(int)
     standalone_scores_OOT['BINS'] = standalone_scores_OOT['BINS']
     standalone_scores_OOT.sort_values(['SCORE', 'SCORE_BAND'], inplace = True)
-    return standalone_scores_OOT
+    return standalone_scores_OOT, lift_chart_data_OOT
 
 def lift_init_plots(df:pd.DataFrame, is_baseline = True):
     from tqdm import tqdm
@@ -349,7 +349,7 @@ def lift_init_plots(df:pd.DataFrame, is_baseline = True):
         lift_chart_data_OOT = lift_chart_data_OOT.append(fd)
     if is_baseline == True:
         lift_chart_data_OOT[period_metrics.value] = 'Baseline'
-        
+    lift_chart_data_OOT.sort_values(['SCORE', 'SCORE_BAND'], inplace = True)   
     standalone_scores_OOT = lift_chart_data_OOT.melt(id_vars=[period_metrics.value,'BINS','SCORE_BAND'],value_vars=cols,
                                         var_name='SCORE', 
                                         value_name='BAD_RATE').dropna().reset_index(drop = True).copy()
@@ -373,13 +373,16 @@ def save_csv(df, metric):
     sio.seek(0)
     return pn.widgets.FileDownload(sio, embed=True, filename='%s.csv'%metric)
 
-def get_xlsx(df1,df2,df3):
+def get_xlsx(df1,df2,df3,df4,df5,df6):
     from io import BytesIO
     output = BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
     df1.to_excel(writer, sheet_name="PSI")
     df2.to_excel(writer, sheet_name="AUC")
     df3.to_excel(writer, sheet_name="KS")
+    df4.to_excel(writer, sheet_name="LABEL_DRIFT")
+    df5.to_excel(writer, sheet_name="LABEL_Tables")
+    df6.to_excel(writer, sheet_name="GAINS_Tables")
     writer.save() # Important!
     output.seek(0) # Important!
     return pn.widgets.FileDownload(output,embed=True, filename='results.csv', button_type="primary")
@@ -539,20 +542,38 @@ def run(_):
         df.TARGET = np.where(df.TARGET > 0 , 1 , 0)      
     df.SCORE = df.SCORE.astype(np.float64)
 
-    # print(date_range_.value)
+    
 
     # baselines
-    try:
-        baseline = df.set_index('MONTHLY').loc[date_range_.value[0]: date_range_.value[1]].reset_index().copy()
-    except:
-        baseline = df.copy()
-        baseline = baseline.set_index('MONTHLY')
-        baseline.index = pd.to_datetime(baseline.index)
-        baseline = baseline.loc[date_range_.value[0]: date_range_.value[1]].reset_index()
-        baseline["MONTHLY"] = baseline["MONTHLY"] .dt.strftime('%Y-%m')   
+    # try:
+    #     baseline = df.set_index('MONTHLY').loc[date_range_.value[0]: date_range_.value[1]].reset_index().copy()
+    # except:
+    #     baseline = df.copy()
+    #     baseline = baseline.set_index('MONTHLY')
+    #     baseline.index = pd.to_datetime(baseline.index)
+    #     baseline = baseline.loc[date_range_.value[0]: date_range_.value[1]].reset_index()
+    #     baseline["MONTHLY"] = baseline["MONTHLY"] .dt.strftime('%Y-%m')
+    baseline = df.set_index('DATE').loc[date_range_.value[0]: date_range_.value[1]].reset_index()
+    print(baseline.DATE.min())
+    print(baseline.DATE.max())
+    print(df.DATE.max())
+    # print(df.set_index('DATE').loc[date_range_.value[0]: date_range_.value[1]].index.max())
     #prods
-    prod = df.loc[~df.MONTHLY.isin(list(baseline.MONTHLY.unique()))].copy()
-
+    # prod = df.loc[~df.MONTHLY.isin(list(baseline.MONTHLY.unique()))].copy()
+    prod_dates = df.set_index('DATE').index.difference(baseline.set_index('DATE').index)
+    # print(prod_dates)
+    prod = df.set_index('DATE').loc[prod_dates].reset_index()
+    if len(baseline) > len(prod):
+        prod = baseline
+    ##START##
+    intiate = pn.pane.Alert('''### Baseline Period: \\n%s to %s
+    '''%(baseline.DATE.min(),baseline.DATE.max()), alert_type="info")
+    intiate2 = pn.pane.Alert('''### Production Period: \\n%s to %s
+    '''%(prod.DATE.min(),prod.DATE.max()), alert_type="info")
+    if prod.equals(baseline):
+            intiate3 = pn.pane.Alert('''### Baseline Set is identical to Production Set \\n Please choose a slice to be a baseline set''', alert_type="danger")
+    else:
+        intiate3 = None
     ##PSI##
     baseline_psi = baseline.copy()
     prod_psi = prod.copy()
@@ -574,8 +595,12 @@ def run(_):
     prod_psi = pd.concat([prod_psi,baseline_psi])
 
     prod_psi = prod_psi.pivot(index = "DEC_BANDS", columns=period_metrics.value)["percent"]
-    psi_ = psi(prod_psi).to_frame("%s_PSI"%period_metrics.value)
-    psi_results = pn.widgets.DataFrame(psi_)
+    if len(baseline) < len(prod):
+        psi_ = psi(prod_psi).to_frame("%s_PSI"%period_metrics.value)
+        psi_results = pn.widgets.DataFrame(psi_)
+    else: 
+        psi_ = pd.DataFrame()
+        psi_results = pn.pane.Alert("### Choose a Baseline in the left banner to get PSI results", alert_type="warning")
     #CONFIGS
     baseline['QUARTERLY'] = 'Baseline: '+ baseline['QUARTERLY'].unique()[0] + '_' + baseline['QUARTERLY'].unique()[-1]
     baseline['MONTHLY'] = 'Baseline: '+ baseline['MONTHLY'].unique()[0] + '_' + baseline['MONTHLY'].unique()[-1]
@@ -602,18 +627,20 @@ def run(_):
     baseline_ks = pn.widgets.DataFrame(ks_b)
     prod_ks = pn.widgets.DataFrame(ks_p,name = 'AUC') #autosize_mode='fit_columns'
 
-    baseline_lift_raw = lift_init(df = baseline)
+    #LIFT
+    baseline_lift_raw, baseline_lift_raw_bins = lift_init(df = baseline)
     baseline_lift_raw = baseline_lift_raw.rename(columns = {'Baseline': b_label})
-    prod_lift_raw = lift_init(df = prod, baseline = baseline, is_baseline = False)
+    prod_lift_raw,  prod_lift_raw_bins = lift_init(df = prod, baseline = baseline, is_baseline = False)
     cols_b = baseline_lift_raw.columns.drop(['BINS', 'SCORE'])
     cols = prod_lift_raw.columns.drop(['BINS', 'SCORE'])
 
     baseline_lift = baseline_lift_raw.loc[baseline_lift_raw.BINS =='10',cols_b]
     prod_lift = prod_lift_raw.loc[prod_lift_raw.BINS =='10',cols]
-    prod_lift = pd.concat([prod_lift.dropna(subset = [col]).dropna(axis = 1).reset_index(drop = 1) for col in prod_lift][1:], axis = 1)
+    # prod_lift = pd.concat([prod_lift.dropna(subset = [col]).dropna(axis = 1).reset_index(drop = 1) for col in prod_lift][1:], axis = 1)
     lift_table = prod_lift_raw.loc[prod_lift_raw.BINS =='10',cols].melt(id_vars="SCORE_BAND", 
                                 var_name='column', 
                                 value_name='value').dropna().reset_index(drop = True).rename(columns = {'column':period_metrics.value , 'value': 'Target_PCT'})
+    # print(prod_lift_raw_bins.loc[prod_lift_raw_bins.BINS ==10])
     lift_table = lift_table.hvplot.table(groupby = period_metrics.value, title="%s Lift Table"%period_metrics.value, hover = True, responsive=True, 
                 shared_axes= False, fit_columns = True,
                 padding=True , index_position = 0, fontscale = 1.5)
@@ -621,39 +648,73 @@ def run(_):
     # print(baseline_lift_raw.loc[baseline_lift_raw.BINS == '10',cols_b])
     prod_lift_raw['BINS'] = prod_lift_raw['BINS'].astype(int)
     baseline_lift_raw['BINS'] = baseline_lift_raw['BINS'].astype(int)
+    
+    prod_lift_raw_bins['SCORE_BAND'] = prod_lift_raw_bins['SCORE_BAND'].astype(str)
+    # prod_lift_raw_bins['BINS'] = prod_lift_raw_bins['BINS'].astype(str)
 
-    p1 = prod_lift_raw.loc[:,list(cols)+['BINS']].set_index('SCORE_BAND'
-                                                      ).reset_index().hvplot.line(x = 'SCORE_BAND', groupby = ['BINS'],
+    baseline_lift_raw_bins['SCORE_BAND'] = baseline_lift_raw_bins['SCORE_BAND'].astype(str)
+    # baseline_lift_raw_bins['BINS'] = baseline_lift_raw_bins['BINS'].astype(str)  
+
+    # print(prod_lift_raw.loc[:,list(cols)+['BINS']])
+    p1 = prod_lift_raw_bins.set_index('SCORE_BAND'
+                                                      ).reset_index().hvplot.line(x = 'SCORE_BAND', groupby = ['BINS', period_metrics.value],
                                                           grid = True, width = 1200, height = 500,
                                                           label = 'Production', rot = 45)
-    p2 = prod_lift_raw.loc[:,list(cols)+['BINS']].set_index('SCORE_BAND'
-                                                        ).reset_index().hvplot.scatter(x = 'SCORE_BAND', groupby = ['BINS'], grid = True, color='DarkBlue', label='Production', rot = 45) 
+    
+    # print(baseline_lift_raw_bins)  
+    # print(prod_lift_raw_bins)                                                    
+    p2 = prod_lift_raw_bins.set_index('SCORE_BAND'
+                                                        ).reset_index().hvplot.scatter(x = 'SCORE_BAND', groupby = ['BINS', period_metrics.value], grid = True, color='DarkBlue', label='Production', rot = 45) 
 
     b_label = baseline.MONTHLY.min()
     # print(baseline_lift_raw.loc[baseline_lift_raw.BINS == '10',cols_b][b_label])
-    b1 = baseline_lift_raw.loc[:,list(cols_b)+['BINS']].hvplot.line(x = 'SCORE_BAND', groupby = ['BINS'],
+    b1 = baseline_lift_raw_bins.hvplot.line(x = 'SCORE_BAND', groupby = ['BINS'],
                                                             grid = True, width = 1200, height = 500,
                                                             line_dash='dashed', color = 'black', label = b_label, rot = 45)
 
-    b2 = baseline_lift_raw.loc[:,list(cols_b)+['BINS']].hvplot.scatter(x = 'SCORE_BAND', groupby = ['BINS'], grid = True, color='DarkGreen', label = b_label, rot = 45) 
+    b2 = baseline_lift_raw_bins.hvplot.scatter(x = 'SCORE_BAND', groupby = ['BINS'], grid = True, color='DarkGreen', label = b_label, rot = 45) 
 
-    # print(cols_b)
-    # print(prod_lift_raw)
     final_lift_plots = (p1*p2*b1*b2).opts(ylabel = '%target_rate_mean', title = "%s Lift Chart " % (period_metrics.value.title())) 
 
+    #LABEL_DRIFT
+    mean_score_prod = prod.groupby(period_metrics.value).agg(MEAN_SCORE=("SCORE","mean"), MEAN_TARGET=("TARGET","mean"),Count = ("TARGET","count"))
+    mean_score_base = baseline.groupby(period_metrics.value).agg(MEAN_SCORE=("SCORE","mean"), MEAN_TARGET=("TARGET","mean"),Count = ("TARGET","count"))
+    baseline_label_drift = pn.widgets.DataFrame(mean_score_base)
+    prod_label_drift = pn.widgets.DataFrame(mean_score_prod,name = 'DRIFT')
 
-
+    #Lift Tables
+    # gains_final_all,_ = gains_table_proba(prod,'TARGET', 'SCORE')
+    lift_data = pd.concat([baseline_lift, prod_lift], axis = 0)
+    lift_data = pd.concat([lift_data.dropna(subset = [col]).dropna(axis = 1).reset_index(drop = 1) for col in lift_data][1:], axis = 1).dropna(axis = 1, how = 'any')
+    lift_data = lift_data.loc[:,~lift_data.columns.duplicated()].set_index('SCORE_BAND')
+    if (lift_data.shape[1] > 4) | (lift_data.shape[0] > 10):
+        prod_lift = pn.pane.Markdown('### Please download the csv as the lift table will congest the screen')
+    else:
+        prod_lift = pn.widgets.DataFrame(lift_data,name = 'LIFT')
+    #GAINS_TABLE
+    gains_final_prod,_ = gains_table_proba(prod,'TARGET', 'SCORE')
+    gains_final_base,_ = gains_table_proba(baseline,'TARGET', 'SCORE')
+    gains_final_base.index.names = [b_label]
+    gains_final_p = pn.widgets.DataFrame(gains_final_prod.set_index(['low','high']),name = 'GAINS',)
+    gains_final_b = pn.widgets.DataFrame(gains_final_base.set_index(['low','high']),name = 'GAINS',)
 
 
     return pn.Tabs(
         ('Metrics', pn.Column(
+                    pn.Row(intiate, intiate2, intiate3, width = 1200),
                     '# PSI',
                     pn.Row(psi_results, save_csv(psi_, 'PSI')),
                     '# AUC',
                     pn.Row(prod_auc, baseline_auc, save_csv(pd.concat([auc_b, auc_p], axis = 0), 'AUC')),
                     '# KS',
                     pn.Row(prod_ks, baseline_ks, save_csv(pd.concat([ks_b, ks_p], axis = 0), 'KS')),
-                    get_xlsx(psi_, pd.concat([auc_b, auc_p], axis = 0), pd.concat([ks_b, ks_p], axis = 0)), 
+                    '# LABEL DRIFT',
+                    pn.Row(prod_label_drift, baseline_label_drift, save_csv(pd.concat([mean_score_base, mean_score_prod], axis = 0), 'LABEL_DRIFT')),
+                    '# LIFT TABLES',
+                    pn.Row(prod_lift, save_csv(lift_data, 'LIFT_TABLES')),
+                    '# GAINS TABLE',
+                    pn.Row(gains_final_p, gains_final_b, save_csv(pd.concat([gains_final_base, gains_final_prod], axis = 1), 'GAINS_TABLES')),
+                    get_xlsx(psi_, pd.concat([auc_b, auc_p], axis = 0), pd.concat([ks_b, ks_p], axis = 0), pd.concat([mean_score_base, mean_score_prod], axis = 0), lift_data, pd.concat([gains_final_base, gains_final_prod], axis = 1)), 
                              )
         ), #sizing_mode='stretch_width'
         ('Charts', pn.Column(roc_plot.opts(legend_position = 'bottom_right') ,
