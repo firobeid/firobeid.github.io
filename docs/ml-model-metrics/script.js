@@ -579,7 +579,7 @@ def run(_):
     # print(df.set_index('DATE').loc[date_range_.value[0]: date_range_.value[1]].index.max())
     #prods
     # prod = df.loc[~df.MONTHLY.isin(list(baseline.MONTHLY.unique()))].copy()
-    prod_dates = df.set_index('DATE').index.difference(baseline.set_index('DATE').index)
+    prod_dates = df.set_index('DATE').sort_index().index.difference(baseline.set_index('DATE').index)
     # print(prod_dates)
     prod = df.set_index('DATE').loc[prod_dates].reset_index()
     if len(baseline) > len(prod):
