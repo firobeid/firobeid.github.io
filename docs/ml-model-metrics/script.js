@@ -441,7 +441,7 @@ make sure to append it to the csv before uploading.
 
 file_input = pn.widgets.FileInput(align='center')
 date_selector = pn.widgets.Select(name='Select Date Column',)
-check_date = pn.widgets.Checkbox(name = '<--') # T/F
+check_date = pn.widgets.Checkbox(name = '<--',value = False) # T/F
 target_selector = pn.widgets.Select(name='Select Target Variable(True Label)')
 score_selector = pn.widgets.Select(name='Select Predictions Column(Raw Probaility)')
 period_metrics = pn.widgets.Select(name='Select Period', options = ['MONTHLY','WEEKLY', 'QUARTERLY'])
@@ -500,14 +500,16 @@ def update_target(event):
     date_selector.set_param(options=cols)
     target_selector.set_param(options=cols)
     score_selector.set_param(options=cols)
-
+    # print(check_date.value)
+    # print(type(df.DATE.min()))
     if check_date.value == True:
         date_column = [i.find("DATE") for i in df.columns] 
         date_column = [date_column.index(i) for i in [i for i in date_column if i !=-1]]
-        if len(date_column) == 0:
+        if len(date_column) > 0:
             df = df.iloc[:,date_column].iloc[:,[0]]
             df.columns = ['DATE']
-            start, end = df.DATE.min(), df.DATE.max()
+            # print(type(df.DATE.min()))
+            start, end = pd.Timestamp(df.DATE.min()),  pd.Timestamp(df.DATE.max())
             date_range_.set_param(value=(start, end), start=start, end=end)
         else:
             print('Creating synthetic dates')
@@ -567,6 +569,8 @@ def run(_):
     #     baseline = baseline.loc[date_range_.value[0]: date_range_.value[1]].reset_index()
     #     baseline["MONTHLY"] = baseline["MONTHLY"] .dt.strftime('%Y-%m')
     baseline = df.set_index('DATE').loc[date_range_.value[0]: date_range_.value[1]].reset_index()
+    print(date_range_.value[0])
+    print(date_range_.value[1])
     print(baseline.DATE.min())
     print(baseline.DATE.max())
     print(df.DATE.max())
