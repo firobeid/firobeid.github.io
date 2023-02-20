@@ -387,6 +387,19 @@ def get_xlsx(df1,df2,df3,df4,df5,df6):
     output.seek(0) # Important!
     return pn.widgets.FileDownload(output,embed=True, filename='results.csv', button_type="primary")
 
+
+def expected_calibration_error(y, proba, bins = 'fd'):
+  import numpy as np
+  bin_count, bin_edges = np.histogram(proba, bins = bins)
+  n_bins = len(bin_count)
+  bin_edges[0] -= 1e-8 # because left edge is not included
+  bin_id = np.digitize(proba, bin_edges, right = True) - 1
+  bin_ysum = np.bincount(bin_id, weights = y, minlength = n_bins)
+  bin_probasum = np.bincount(bin_id, weights = proba, minlength = n_bins)
+  bin_ymean = np.divide(bin_ysum, bin_count, out = np.zeros(n_bins), where = bin_count > 0)
+  bin_probamean = np.divide(bin_probasum, bin_count, out = np.zeros(n_bins), where = bin_count > 0)
+  ece = np.abs((bin_probamean - bin_ymean) * bin_count).sum() / len(proba)
+  return ece, bin_probamean, bin_ymean, bin_id, bin_count, bin_edges
 ###############################
 ###END OFF UTILITY FUNCTIONS###
 ###############################
@@ -698,7 +711,10 @@ def run(_):
     gains_final_p = pn.widgets.DataFrame(gains_final_prod.set_index(['low','high']),name = 'GAINS',)
     gains_final_b = pn.widgets.DataFrame(gains_final_base.set_index(['low','high']),name = 'GAINS',)
 
-
+    ece, bin_probamean, bin_ymean, bin_id, bin_count, bin_edges = expected_calibration_error(prod.TARGET.values, prod.SCORE.values)
+    error = pd.DataFrame(np.array([bin_probamean, bin_ymean]).T,columns= ["SCORE_MEAN", "TARGET_MEAN"])
+    error_plot = error.hvplot.scatter(x ='SCORE_MEAN', y = 'TARGET_MEAN', width = 800, height = 500, label = "Bin (Score vs Target Mean)", title = 'Model Scores Calibration (--- Perfect Calibration)',
+                                                        xlim = (0,1), ylim = (0,1), grid = True, xlabel = 'Bins Mean of Scores', ylabel = 'Bins Mean of Target') *  Slope(slope=1, y_intercept=0,legend = 'Perfect Calibration').opts(color='black', line_dash='dashed')  
     return pn.Tabs(
         ('Metrics', pn.Column(
                     pn.Row(intiate, intiate2, intiate3, width = 1200),
@@ -717,9 +733,9 @@ def run(_):
                     get_xlsx(psi_, pd.concat([auc_b, auc_p], axis = 0), pd.concat([ks_b, ks_p], axis = 0), pd.concat([mean_score_base, mean_score_prod], axis = 0), lift_data, pd.concat([gains_final_base, gains_final_prod], axis = 1)), 
                              )
         ), #sizing_mode='stretch_width'
-        ('Charts', pn.Column(roc_plot.opts(legend_position = 'bottom_right') ,
+        ('Charts', pn.Column(pn.Row(roc_plot.opts(legend_position = 'bottom_right'), error_plot.opts(legend_position = 'top_left')) ,
                              lift_table,
-                             final_lift_plots.opts(legend_position = 'bottom_right') 
+                             final_lift_plots.opts(legend_position = 'bottom_right')
                             )
         )
     
