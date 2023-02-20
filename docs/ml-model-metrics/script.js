@@ -543,7 +543,7 @@ def run(_):
     except Exception as e:
         return pn.pane.Markdown(f"""{e}""")
     try:
-        df.DATE = pd.to_datetime(df.DATE,utc = True)
+        df.DATE = pd.to_datetime(df.DATE)
         # print(pd.to_datetime(df.DATE,utc = True))
         df["MONTHLY"] = df["DATE"].dt.strftime('%Y-%m')
         df['QUARTERLY'] = pd.PeriodIndex(df.DATE, freq='Q').astype(str)
@@ -568,12 +568,14 @@ def run(_):
     #     baseline.index = pd.to_datetime(baseline.index)
     #     baseline = baseline.loc[date_range_.value[0]: date_range_.value[1]].reset_index()
     #     baseline["MONTHLY"] = baseline["MONTHLY"] .dt.strftime('%Y-%m')
-    baseline = df.set_index('DATE').loc[date_range_.value[0]: date_range_.value[1]].reset_index()
     print(date_range_.value[0])
     print(date_range_.value[1])
+
+    baseline = df.set_index('DATE').sort_index().loc[date_range_.value[0]: date_range_.value[1]].reset_index()
     print(baseline.DATE.min())
     print(baseline.DATE.max())
     print(df.DATE.max())
+
     # print(df.set_index('DATE').loc[date_range_.value[0]: date_range_.value[1]].index.max())
     #prods
     # prod = df.loc[~df.MONTHLY.isin(list(baseline.MONTHLY.unique()))].copy()
@@ -588,7 +590,7 @@ def run(_):
     intiate2 = pn.pane.Alert('''### Production Period: \\n%s to %s
     '''%(prod.DATE.min(),prod.DATE.max()), alert_type="info")
     if prod.equals(baseline):
-            intiate3 = pn.pane.Alert('''### Baseline Set is identical to Production Set \\n Please choose a slice to be a baseline set''', alert_type="danger")
+        intiate3 = pn.pane.Alert('''### Baseline Set is identical to Production Set \\n Please choose a slice to be a baseline set''', alert_type="danger")
     else:
         intiate3 = None
     ##PSI##
