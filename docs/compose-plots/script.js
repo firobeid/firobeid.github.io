@@ -411,7 +411,7 @@ ML_metrics =  pn.pane.Markdown("""
 ### Binary Classification Metrics Calculation
 
 \`\`\`python
-__author__: Firas Obeod
+__author__: Firas Obeid
 def metrics(confusion_matrix):
     '''
     Each mean is appropriate for different types of data; for example:
@@ -437,14 +437,50 @@ def metrics(confusion_matrix):
     return {'FPR':FPR, 'Confidence': Confidence, 'FDR' :FDR, 'Precision': 
             Precision, 'Recall_Power':Recall_Power, 'Accuracy': Accuracy, "G_mean": G_mean}
 \`\`\`
-""", width = 500)
+""", width = 800)
 
+knn_scratch =  pn.pane.Markdown("""
+### K-Nearest Neighbor from Scratch
+\`\`\`python
+__author__: Mohammad Obeid
+import numpy as np
+def knn(X_train, y_train, X_test, y_test, k):
+    '''
+    returns the test error compared to the predicted labels
+    '''
+    distances = np.sqrt(np.sum((X_test[:, np.newaxis, :] - X_train) ** 2, axis=2))
+    y_pred = np.zeros(len(X_test))
+    
+    for i in range(len(X_test)):
+        # Get the indices of the k-nearest neighbors
+        indices = np.argsort(distances[i])[:k]
+        
+        # Get the labels of the k-nearest neighbors
+        k_nearest_labels = y_train[indices].astype(int)
+        
+        # Predict the label of test sample i
+        y_pred[i] = np.bincount(k_nearest_labels).argmax()
+    
+    return sum(y_pred != y_test)/len(y_test)
+## Optimal K for KNN
+test_errors = []
+for k in range(1, 101):
+    test_error = knn(X_train, y_train, X_test, y_test, k)
+    test_errors.append(test_error)
 
-
+# Plot the test errors as a function of n_neighbors
+plt.plot(range(1, 101), test_errors)
+plt.xlabel('n_neighbors')
+plt.ylabel('Test error')
+plt.title('KNN classifier performance')
+plt.show()
+\`\`\`
+""", width = 880)
 prec_recall =  pn.pane.Markdown("""
 ### Precision VS Recall Interpretation
 ** Recall : How many of that class (1 or 0) does the model capture?
-** Precidion: How many are of those captured are correct prediction? 
+
+** Precision: How many are of those captured are correct prediction? 
 
 On a high level, Recall controls False Negative (i.e more important in medical field)
 and Precision controls False Positived (i.e more important in credit risk, traind, finance in general...)
@@ -875,7 +911,7 @@ tabs = pn.Tabs(
                           ('Data Considerations!!',pn.Column(data_slider, data_output)),
                           ('Unsupervised Learning (Clustering)', pn.Row(pn.Column(clustering_slider, cluster_output),k_means_simple)),
                           ("TimeSeries Forecasting",pn.Row(timeseries_libs,pn.Column(ts_gif, ts_cv),timeseries_data_split)),
-                          ("General ML Algorithms' Survey", pn.Row(pn.Column(general_ml_slider, general_ml_output),ML_algoes, pn.Column(ML_metrics, prec_recall))),
+                          ("General ML Algorithms' Survey", pn.Row(pn.Column(general_ml_slider, general_ml_output),ML_algoes, pn.Column(knn_scratch, ML_metrics, prec_recall))),
                           ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))), 
                         #   ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.Column(widgets_submission, ts_competition_submission), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))), 
                           ('Neural Netwroks Visit',pn.Row(pn.Column(dl_slider, dl_output), DL_tips))
