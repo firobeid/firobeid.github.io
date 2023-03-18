@@ -475,7 +475,7 @@ def get_data():
     global df
     if file_input.value is None:
         np.random.seed(random_seed.value)
-        df = pd.DataFrame({'DATE': pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = 9999)), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H"),
+        df = pd.DataFrame({'DATE': pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = 9999+1)), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H"),
                         'ID': [i for i in range(10000)],
                         'SCORE':np.random.uniform(size = 10000),
                         'TARGET': np.random.choice([0,1],10000, p=[0.9,0.1])})
@@ -513,13 +513,13 @@ def update_target(event):
             date_range_.set_param(value=(start, end), start=start, end=end)
         else:
             print('Creating synthetic dates')
-            synthetic_date = pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = len(df) - 1)), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H")
+            synthetic_date = pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = len(df))), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H") #remove len(df) - 1
             df['DATE'] = synthetic_date[:len(df)]
             start, end = df.DATE.min(), df.DATE.max()
             date_range_.set_param(value=(start, end), start=start, end=end)
     else:
         print('Creating synthetic dates')
-        synthetic_date = pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = len(df) - 1)), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H")
+        synthetic_date = pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = len(df))), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H")
         df['DATE'] = synthetic_date[:len(df)]
         start, end = df.DATE.min(), df.DATE.max()
         date_range_.set_param(value=(start, end), start=start, end=end)
@@ -735,7 +735,7 @@ def run(_):
                     '# LIFT TABLES',
                     pn.Row(prod_lift, save_csv(lift_data, 'LIFT_TABLES')),
                     '# GAINS TABLE',
-                    pn.Row(gains_final_p, gains_final_b, save_csv(pd.concat([gains_final_base, gains_final_prod], axis = 1), 'GAINS_TABLES')),
+                    pn.Row(gains_final_b, gains_final_p, save_csv(pd.concat([gains_final_base, gains_final_prod], axis = 1), 'GAINS_TABLES')),
                     get_xlsx(psi_, pd.concat([auc_b, auc_p], axis = 0), pd.concat([ks_b, ks_p], axis = 0), pd.concat([mean_score_base, mean_score_prod], axis = 0), lift_data, pd.concat([gains_final_base, gains_final_prod], axis = 1)), 
                              )
         ), #sizing_mode='stretch_width'
