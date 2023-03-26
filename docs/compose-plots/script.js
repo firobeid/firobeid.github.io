@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas']
+  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas', 'scipy', 'scikit-learn']
   for (const pkg of env_spec) {
     const pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
     self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
@@ -133,7 +133,7 @@ image = pn.pane.image.PNG(
 welcome = pn.pane.Markdown(
     """
 ### This dashboard/WebApp leverages FinTech and Data Science tools for practical and hands on demo's for UCBerkley FinTech Bootcamp students in [\`Firas Ali Obeid's\`](https://www.linkedin.com/in/feras-obeid/) classes
-* Motive is to keep students up to date with the tools that allows them to define a problem till deployment in a very short amount of time for efficient deliverables in the work place or in academia. 
+* Motive is to keep students up to date with the tools that allow them to define a problem till deployment in a very short amount of time for efficient deliverables in the work place or in academia. 
 * The tool/web app is developed completly using python and deployed serverless on github pages (not static anymore right?! 
 
 * Disclaimer: All data presented are from UCBerkley resources.
@@ -308,6 +308,15 @@ def general_ml_slideshow(index):
     url = f"https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Algo_Survey/{index}.png"
     return pn.pane.PNG(url,width = 800)
 general_ml_output = pn.bind(general_ml_slideshow, general_ml_slider)
+
+ML_quote = pn.pane.Markdown(
+    """
+***\`"When your fundraising it's AI
+When you're hiring it is ML
+When you're implementing it's Linear Regression
+When you are debugging it's printf()" - Barron Schwartz\`***
+"""
+)
 
 ML_algoes = pn.pane.Markdown("""
 ### Some behind the Scenes Simple Implementations
@@ -828,22 +837,13 @@ widgets_submission = pn.WidgetBox(
     width = 500
 )
 
-# def update_submission_widget(event):
-#     global sub_name
-#     prediction_submission_name.value = event.new
-#     sub_name = str(prediction_submission_name.value.replace("\\n", "").replace(" ", ""))
-#     print(sub_name)
-# # when prediction_submission_name changes, 
-# # run this function to global variable sub_name
-# prediction_submission_name.param.watch(update_submission_widget, "value")
-
 @pn.depends(run_github_upload.param.clicks)
 def ts_competition_submission(_):
     leaderboard_ts()
     return pn.Column(final_github)
 
 
-run_button = pn.widgets.Button(name="Click to get model error/score!")
+run_button = pn.widgets.Button(name="Click to get model scores!")
 file_input_ts = pn.widgets.FileInput(align='center')
 text_ts = """
 # Prediction Error Scoring
@@ -885,6 +885,250 @@ file_input_ts.param.watch(update_target, 'value')
 def ts_competition(_):
     get_real_test_timeseries()
     return pn.Column(cal_error_metrics)
+##########################
+##  ML COMPETITION      ##
+##########################
+reward_ml = pn.pane.PNG("https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/TimeSeriesCompetition/Images/Reward.png")
+# other_metrics = pn.pane.PNG("https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ts/Regression_Loss_functions.png", height = 500)
+def amex_metric_mod(y_true, y_pred):
+
+    labels     = np.transpose(np.array([y_true, y_pred]))
+    labels     = labels[labels[:, 1].argsort()[::-1]]
+    weights    = np.where(labels[:,0]==0, 10, 1)
+    cut_vals   = labels[np.cumsum(weights) <= int(0.15 * np.sum(weights))]
+    top_four   = np.sum(cut_vals[:,0]) / np.sum(labels[:,0])
+
+    gini = [0,0]
+    for i in [1,0]:
+        labels         = np.transpose(np.array([y_true, y_pred]))
+        labels         = labels[labels[:, i].argsort()[::-1]]
+        weight         = np.where(labels[:,0]==0, 10, 1)
+        weight_random  = np.cumsum(weight / np.sum(weight))
+        total_pos      = np.sum(labels[:, 0] *  weight)
+        cum_pos_found  = np.cumsum(labels[:, 0] * weight)
+        lorentz        = cum_pos_found / total_pos
+        gini[i]        = np.sum((lorentz - weight_random) * weight)
+
+    return 0.5 * (gini[1]/gini[0] + top_four)
+
+def ks(y_real, y_proba):
+    from scipy.stats import ks_2samp
+    df = pd.DataFrame()
+    df['real'] = y_real
+    df['proba'] = y_proba
+    
+    # Recover each class
+    class0 = df[df['real'] == 0]
+    class1 = df[df['real'] == 1]
+    
+    ks_ = ks_2samp(class0['proba'], class1['proba'])
+    
+    
+    return ks_[0]
+
+def expected_calibration_error(y, proba, bins = 'fd'):
+  import numpy as np
+  bin_count, bin_edges = np.histogram(proba, bins = bins)
+  n_bins = len(bin_count)
+  bin_edges[0] -= 1e-8 # because left edge is not included
+  bin_id = np.digitize(proba, bin_edges, right = True) - 1
+  bin_ysum = np.bincount(bin_id, weights = y, minlength = n_bins)
+  bin_probasum = np.bincount(bin_id, weights = proba, minlength = n_bins)
+  bin_ymean = np.divide(bin_ysum, bin_count, out = np.zeros(n_bins), where = bin_count > 0)
+  bin_probamean = np.divide(bin_probasum, bin_count, out = np.zeros(n_bins), where = bin_count > 0)
+  ece = np.abs((bin_probamean - bin_ymean) * bin_count).sum() / len(proba)
+  return ece
+
+def save_csv(type_, name):
+    from io import StringIO
+    sio = StringIO()
+    if type_ == 'dev':
+        df = pd.read_csv('https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Competition/train_data/dev_data.csv')
+    elif type_ == 'test':
+        df = pd.read_csv('https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Competition/test_data/test_data.csv')
+    df.to_csv(sio)
+    sio.seek(0)
+    return pn.widgets.FileDownload(sio, embed=True, filename='%s.csv'%name)
+
+def cal_error_metrics_ml():
+    global real_test_data_ml, predictions_ml, metrics
+
+    def all_metrics(y_true, y_test):
+        from sklearn.metrics import roc_auc_score
+        return {"Amex_Metric": amex_metric_mod(y_true,y_test), 
+                "KS" : ks(y_true,y_test), 
+                "Expected Calibration Error": expected_calibration_error(y_true,y_test), 
+                "AUC": roc_auc_score(y_true, y_test)}
+
+    try:
+        assert len(real_test_data_ml) == len(predictions_ml)
+    except Exception as e: # if less than 2 words, return empty result
+        return pn.pane.Markdown(f"""ERROR:You didnt upload excatly {len(real_test_data_ml)} predictions rows!!""")
+    try:
+        metrics = all_metrics(real_test_data_ml["loan_status"].values, predictions_ml[predictions_ml.columns[0]].values)
+
+        # error_df = pd.DataFrame({"RMSE":[rmse_error]}, index = [str(file_input_ts.filename)])
+        error_df = pd.DataFrame({"Metrics_Value":metrics}).T
+        error_df.index.name = 'Results'
+    except Exception as e: 
+        return pn.pane.Markdown(f"""{e}""")
+
+    return pn.widgets.Tabulator(error_df, layout='fit_columns', width=700, height=100, name = 'Score Board')
+
+
+def get_real_test_labels():
+    global real_test_data_ml, predictions_ml 
+    real_test_data_ml = pd.read_csv(
+    'https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Competition/test_data/test_labels.csv'
+).dropna()
+    if file_input_ts.value is None:
+        predictions_ml = pd.DataFrame({'loan_status': np.random.choice([0,1], size = len(real_test_data_ml), p = [0.87,0.13])})
+    else:
+        predictions_ml = BytesIO()
+        predictions_ml.write(file_input_ts.value)
+        predictions_ml.seek(0)
+        print(file_input_ts.filename)
+        try:
+            predictions_ml = pd.read_csv(predictions_ml, error_bad_lines=False).dropna()#.set_index("id")
+        except:
+            predictions_ml = pd.read_csv(predictions_ml, error_bad_lines=False).dropna()
+        if len(predictions_ml.columns) > 1:
+            predictions_ml = predictions_ml[[predictions_ml.columns[-1]]]
+        predictions_ml = predictions_ml._get_numeric_data()
+        # predictions[predictions < 0] = 0 #predictions cant be hegative for solar energy prediction task
+        # New_Refit_routing = New_Refit_routing[[cols for cols in New_Refit_routing.columns if New_Refit_routing[cols].nunique() >= 2]] #remove columns with less then 2 unique values
+    # return predictions
+
+# def github_cred():
+#     # from github import Github
+#     repo_name = 'firobeid/TimeSeriesCompetitionTracker'
+#     # using an access token
+#     g = Github("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")
+#     return g.get_repo(repo_name)
+
+# def leaderboard_ts():
+#     global file_on_github
+#     # repo_name = 'firobeid/TimeSeriesCompetitionTracker'
+#     # # using an access token
+#     # g = Github("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")
+#     # # Create Github linkage Instance
+#     # g = github_cred()
+#     # if prediction_submission_name.value == 'Firas_Prediction_v1':
+#     repo = github_cred()
+#     contents = repo.get_contents("")
+#     competitior_rank_file = 'leadership_board_ts.csv'
+#     if competitior_rank_file not in [i.path for i in contents]:
+#         print("Creatine leaderboard file...")
+#         repo.create_file(competitior_rank_file, "creating timeseries leaderboard", "Competitor_Submission, RMSE", branch="main")
+#     file_on_github = pd.read_csv("https://raw.githubusercontent.com/firobeid/TimeSeriesCompetitionTracker/main/leadership_board_ts.csv", delim_whitespace=" ") 
+
+# def upload_scores():
+#     global rmse_error, sub_name, file_on_github
+#     competitior_rank_file = 'leadership_board_ts.csv'
+#     repo = github_cred()
+#     submission = sub_name
+#     score = rmse_error
+#     leaderboard_ts()
+#     file_on_github.loc[len(file_on_github.index)] = [submission, score]
+
+#     target_content = repo.get_contents(competitior_rank_file)
+#     repo.update_file(competitior_rank_file, "Uploading scores for %s"%sub_name,  file_on_github.to_string(index=False), target_content.sha, branch="main")
+#     return pn.pane.Markdown("""Successfully Uploaded to Leaderboard!""")
+
+# def final_github():
+#     global sub_name
+#     global real_test_data_ml, predictions_ml, metrics
+#     sub_name = str(prediction_submission_name.value.replace("\\n", "").replace(" ", ""))
+#     print(sub_name)
+#     if 'rmse_error' not in globals(): #not to allow saving rmse everytime site is reoaded
+#         return pn.widgets.DataFrame(file_on_github.sort_values(by = 'RMSE',ascending=True).set_index('Competitor_Submission'), width=600, height=1000, name = 'Leader Board')
+    
+#     else:
+#         try:
+#             if sub_name != 'Firas_Prediction_v1': #not to allow saving rmse everytime site is reoaded also
+#                 upload_scores()
+#         except Exception as e: 
+#             return pn.pane.Markdown(f"""{e}""")
+#         file_on_github["Rank"] = file_on_github.rank(method = "min")["RMSE"]
+#         return pn.widgets.DataFrame(file_on_github.sort_values(by = 'RMSE',ascending=True).set_index('Rank'), width=600, height=1000, name = 'Leader Board')
+
+# run_github_upload = pn.widgets.Button(name="Click to Upload Results to Leaderscore Board!")
+# prediction_submission_name  = pn.widgets.TextAreaInput(value="Firas_Prediction_v1", height=100, name='Change the name of submission below:')
+# widgets_submission = pn.WidgetBox(
+#     pn.panel("""# Submit to LeaderBoard Ranking""", margin=(0, 10)),
+#     pn.panel('* Change Submision Name Below to your own version and team name (no spaces in between)', margin=(0, 10)),
+#     prediction_submission_name,
+#     # run_github_upload, 
+#     pn.pane.Alert("""##                Leader Ranking Board""", alert_type="success",),
+#     width = 500
+# )
+# def update_submission_widget(event):
+#     global sub_name
+#     prediction_submission_name.value = event.new
+#     sub_name = str(prediction_submission_name.value.replace("\\n", "").replace(" ", ""))
+#     print(sub_name)
+# # when prediction_submission_name changes, 
+# # run this function to global variable sub_name
+# prediction_submission_name.param.watch(update_submission_widget, "value")
+
+# @pn.depends(run_github_upload.param.clicks)
+# def ts_competition_submission(_):
+#     leaderboard_ts()
+#     return pn.Column(final_github)
+
+
+run_button_ml = pn.widgets.Button(name="Click to get model scores!")
+file_input_ml = pn.widgets.FileInput(align='center')
+text_ml = """
+# Prediction Error Scoring
+
+This section is to host a time series modelling competition between UCBekely students teams'. The teams should
+build a time series univariate or multivariate model but the aim is to forcast the \`GHI\` column (a solar energy storage metric).
+
+The train data is 30 minutes frequecy data between 2010-2017 for solar energy for UTDallas area. The students then predict the whole off 2018
+,which is 20863 predictions. The students submit there predictions as csv over here, 
+get error score (RMSE not the best maybe but serves learning objective) and submit to leaderboard to be ranked. Public submissions
+are welcome! But I cant give you extra points on project 2 ;)
+
+The competition data used for the modelling can be found here: 
+
+* [Competition Development Data](https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Competition/train_data/dev_data.csv)
+* [Test Unlabled Data](https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Competition/test_data/test_data.csv)
+
+To access the data locally, copy either off the two hyperlinks and paste them as follows:
+
+\`\`\`
+import pandas as pd
+df = pd.read_csv('https://raw.githubusercontent.com/...')
+\`\`\`
+### Instructions
+1. Upload predictions CSV (only numerical data)
+2. Make sure you have 17519 predictions / row in your CSV and only one column
+3. Press \`Click to get model error/score!\`
+4. Observe you predictions error under yellow box bellow
+5. If satisfied move on to the next box to the right to submit team name and prediction. 
+\`My code takes care of pulling your error and storing it on GitHub to be ranked against incoming scores from teams\`
+"""
+widgets_ml = pn.WidgetBox(
+    pn.panel(text_ml, margin=(0, 20)),
+    pn.panel('### Download the Train and Test Data', margin=(0, 10)),
+    # pn.Row(save_csv('dev', 'development_data'),save_csv('test', 'test_data'), width = 500),
+    pn.panel('Upload Prediction CSV', margin=(0, 10)),
+    file_input_ml,
+    run_button_ml, 
+    pn.pane.Alert("### Prediction Results Will Refresh Below After Clicking above", alert_type="warning")
+    , width = 500
+)
+
+def update_target_ml(event):
+    get_real_test_labels()
+
+file_input_ml.param.watch(update_target_ml, 'value')
+
+@pn.depends(run_button_ml.param.clicks)
+def ml_competition(_):
+    get_real_test_labels()
+    return pn.Column(cal_error_metrics_ml)
 
 
 #########
@@ -914,6 +1158,7 @@ tabs = pn.Tabs(
                           ("General ML Algorithms' Survey", pn.Row(pn.Column(general_ml_slider, general_ml_output),ML_algoes, pn.Column(knn_scratch, ML_metrics, prec_recall))),
                           ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))), 
                         #   ('TimeSeries Competition Error Metric',pn.Row(pn.Column(widgets_ts, ts_competition, reward), pn.layout.Spacer(width=20), pn.Column(widgets_submission, ts_competition_submission), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Other Metrics Can Be Used:"),other_metrics))), 
+                          ('ML Classification Competition',pn.Row(pn.Column(widgets_ml, ml_competition, reward), pn.layout.Spacer(width=30), pn.layout.Spacer(width=20), pn.Column(pn.pane.Markdown("### Keep this in mind:"),ML_quote))),
                           ('Neural Netwroks Visit',pn.Row(pn.Column(dl_slider, dl_output), DL_tips))
                          )
     )
