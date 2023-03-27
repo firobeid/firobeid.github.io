@@ -973,7 +973,7 @@ def cal_error_metrics_ml():
     except Exception as e: 
         return pn.pane.Markdown(f"""{e}""")
 
-    return pn.widgets.Tabulator(error_df, layout='fit_columns', width=700, height=100, name = 'Score Board')
+    return pn.widgets.DataFrame(error_df, layout='fit_columns', width=700, height=100, name = 'Score Board')
 
 
 def get_real_test_labels():
@@ -1080,17 +1080,17 @@ def get_real_test_labels():
 run_button_ml = pn.widgets.Button(name="Click to get model scores!")
 file_input_ml = pn.widgets.FileInput(align='center')
 text_ml = """
-# Prediction Error Scoring
+# Lending Club Prediction Competition
 
-This section is to host a time series modelling competition between UCBekely students teams'. The teams should
-build a time series univariate or multivariate model but the aim is to forcast the \`GHI\` column (a solar energy storage metric).
+This section is to host an ML classification competition between UCBekely students teams'. The teams should
+build classification models to forcast the \`loan_status\` column on test data that I set there respective true labels aside.
 
 The train data is 30 minutes frequecy data between 2010-2017 for solar energy for UTDallas area. The students then predict the whole off 2018
 ,which is 20863 predictions. The students submit there predictions as csv over here, 
 get error score (RMSE not the best maybe but serves learning objective) and submit to leaderboard to be ranked. Public submissions
 are welcome! But I cant give you extra points on project 2 ;)
 
-The competition data used for the modelling can be found here: 
+The competition data used for the modelling can be found here(right click and copy the link): 
 
 * [Competition Development Data](https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Competition/train_data/dev_data.csv)
 * [Test Unlabled Data](https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Competition/test_data/test_data.csv)
