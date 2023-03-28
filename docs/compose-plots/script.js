@@ -1082,20 +1082,27 @@ file_input_ml = pn.widgets.FileInput(align='center')
 text_ml = """
 # Lending Club Prediction Competition
 
-This section is to host an ML classification competition between UCBekely students teams'. The teams should
-build classification models to forcast the \`loan_status\` column on test data that I set there respective true labels aside.
+This section is to host an ML classification competition between UCBekely student teams'. The teams/individuals should
+build classification models to predict the \`loan_status\` column on test data that I set there respective true labels aside.
 
-The train data is 30 minutes frequecy data between 2010-2017 for solar energy for UTDallas area. The students then predict the whole off 2018
-,which is 20863 predictions. The students submit there predictions as csv over here, 
-get error score (RMSE not the best maybe but serves learning objective) and submit to leaderboard to be ranked. Public submissions
-are welcome! But I cant give you extra points on project 2 ;)
+This modelling competition coins a full ML model building on a lending club dataset. I downsampled the original
+development sample from 2million+ rows to 200k+ rows for practicality. The downsampling preserved the target 
+variable distribution as it was done to control the following columns:
+
+\`["addr_state", "issue_d", "zip_code", "grade", "sub_grade", "term"]\`
+
+The test set,which is 20863 rows is to be passed for predictions on the students champion models. The students check there predictions as csv upload 
+over here, to get several metric scores (all metrics below if higher are better except for expected_calibration_error 'lower is better).
 
 The competition data used for the modelling can be found here(right click and copy the link): 
 
+### Download the Train and Test Data'
+
+* [Starter Code](https://github.com/firobeid/firobeid.github.io/blob/main/docs/compose-plots/Resources/ML_lectures/ML_Competition/Start_Code/UCBerkeley_LendingClubData.ipynb)
 * [Competition Development Data](https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Competition/train_data/dev_data.csv)
 * [Test Unlabled Data](https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Competition/test_data/test_data.csv)
 
-To access the data locally, copy either off the two hyperlinks and paste them as follows:
+To access the data locally, copy either off the last two hyperlinks and paste them as follows:
 
 \`\`\`
 import pandas as pd
@@ -1103,21 +1110,21 @@ df = pd.read_csv('https://raw.githubusercontent.com/...')
 \`\`\`
 ### Instructions
 1. Upload predictions CSV (only numerical data)
-2. Make sure you have 17519 predictions / row in your CSV and only one column
+2. Make sure you have 20863 predictions / row in your CSV and only one column
 3. Press \`Click to get model error/score!\`
 4. Observe you predictions error under yellow box bellow
-5. If satisfied move on to the next box to the right to submit team name and prediction. 
+5. If satisfied send me your predictions.csv privaetly in slack! 
+
 \`My code takes care of pulling your error and storing it on GitHub to be ranked against incoming scores from teams\`
 """
 widgets_ml = pn.WidgetBox(
     pn.panel(text_ml, margin=(0, 20)),
-    pn.panel('### Download the Train and Test Data', margin=(0, 10)),
     # pn.Row(save_csv('dev', 'development_data'),save_csv('test', 'test_data'), width = 500),
     pn.panel('Upload Prediction CSV', margin=(0, 10)),
     file_input_ml,
     run_button_ml, 
     pn.pane.Alert("### Prediction Results Will Refresh Below After Clicking above", alert_type="warning")
-    , width = 500
+    , width = 700
 )
 
 def update_target_ml(event):
