@@ -1082,7 +1082,7 @@ file_input_ml = pn.widgets.FileInput(align='center')
 text_ml = """
 # Lending Club Prediction Competition
 
-This section is to host an ML classification competition between UCBekely student teams'. The teams/individuals should
+This section is to host an ML classification competition between UCBerkely student teams'. The teams/individuals should
 build classification models to predict the \`loan_status\` column on test data that I set there respective true labels aside.
 
 This modelling competition coins a full ML model building on a lending club dataset. I downsampled the original
