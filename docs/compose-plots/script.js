@@ -981,13 +981,13 @@ def get_real_test_labels():
     real_test_data_ml = pd.read_csv(
     'https://raw.githubusercontent.com/firobeid/firobeid.github.io/main/docs/compose-plots/Resources/ML_lectures/ML_Competition/test_data/test_labels.csv'
 ).dropna()
-    if file_input_ts.value is None:
+    if file_input_ml.value is None:
         predictions_ml = pd.DataFrame({'loan_status': np.random.choice([0,1], size = len(real_test_data_ml), p = [0.87,0.13])})
     else:
         predictions_ml = BytesIO()
-        predictions_ml.write(file_input_ts.value)
+        predictions_ml.write(file_input_ml.value)
         predictions_ml.seek(0)
-        print(file_input_ts.filename)
+        print(file_input_ml.filename)
         try:
             predictions_ml = pd.read_csv(predictions_ml, error_bad_lines=False).dropna()#.set_index("id")
         except:
