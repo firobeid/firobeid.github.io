@@ -57,14 +57,18 @@ hv.extension('bokeh')
 
 text = """
 #  Feature Distribution and Stats
-## AUTHOR: [\\`FIRAS ALI OBEID\\`](https://www.linkedin.com/in/feras-obeid/) 
+## AUTHOR: [\`FIRAS ALI OBEID\`](https://www.linkedin.com/in/feras-obeid/) 
 ###  GNU General Public License v3.0 (GPL-3.0)
-#### Developed while working at [OppFi Inc.](https://www.oppfi.com/)
+
 This tool performs feature binning by equal intervals and by equal pouplations in each interval vs bad rate/target binary variable
 To get the feature deep dive feature distribution:
+
 1. Upload a CSV (only numerical data)
+
 2. Choose & press on the binary (0 / 1) target column in the \`Select Target Variable\` section below
+
 3. Press Run Analysis
+
 4. Wait few seconds and analyze the updated charts
 """
 
@@ -178,9 +182,9 @@ def cuts_(target):
 
 
     test["index"] = test["feature"] + "_" + test["IntervalCuts"]
-    test = test.set_index("index").sort_index()
+    test = test.set_index("index")
     test2["index"] = test2["feature"] + "_" + test2["IntervalCuts"]
-    test2 = test2.set_index("index").sort_index()
+    test2 = test2.set_index("index")
     final_df = pd.merge(test2, test[test.columns.difference(test2.columns)], on = "index")
    
 
@@ -220,7 +224,7 @@ def qcuts_(target):
     df2[cols] = df2[cols].apply(lambda col: pd.qcut(col.fillna(np.nan).rank(method='first'),q = 10, labels=range(1,11)).cat.rename_categories({10:"Last"}).astype(str).replace(dict(dict(pd.concat([col,
            pd.qcut(col.fillna(np.nan).rank(method='first'),q = 10, labels=range(1,11)).cat.rename_categories({10:"Last"})
            .apply(str)], axis = 1, keys= ["feature", "qcuts"]).groupby("qcuts").agg([min, max]).reset_index().astype(str).set_index("qcuts",drop = False)
-     .apply(lambda x :x[0]+"_"+"("+str(round(float(x[1]),2))+","+str(round(float(x[2]),2))+"]",axis = 1)),**{"nan":f"Qcut_Missing_{col.name}"})), axis=0)
+     .apply(lambda x :x[0]+"_"+"("+x[1]+","+x[2]+"]",axis = 1)),**{"nan":f"Qcut_Missing_{col.name}"})), axis=0)
 
     test_q = pd.concat([df2[cols].value_counts(normalize = True) for cols in df2[cols]], axis = 1)
     cols = test_q.columns
@@ -244,9 +248,9 @@ def qcuts_(target):
     # test2_q.IntervalCuts = test2_q.IntervalCuts.apply(lambda x: "("+str(round(float(x.split(",")[0].strip("(")),4)) +', ' + str(round(float(x.split(",")[-1].strip("]")),4)) +"]" if (x.split(",")[0].strip("(")[0]).isdigit() else x)
 
     test_q["index"] = test_q["feature"] + "_" + test_q["IntervalCuts"]
-    test_q = test_q.set_index("index").sort_index()
+    test_q = test_q.set_index("index")
     test2_q["index"] = test2_q["feature"] + "_" + test2_q["IntervalCuts"]
-    test2_q = test2_q.set_index("index").sort_index()
+    test2_q = test2_q.set_index("index")
     final_df_q = pd.merge(test2_q, test_q[test_q.columns.difference(test2_q.columns)], on = "index")
     
 
@@ -320,7 +324,9 @@ def run(_):
 
 profiles = '''
 ### Other Web Apps:
+
 * [Twitter Sentiment Analysis Flask App](https://firobeid.pythonanywhere.com/)
+
 * [Personal Lectures @ UCBerkley Using Panel App](https://firobeid.github.io/compose-plots/script.html)
 '''
 pn.Row(pn.Column(widgets, profiles), pn.layout.Spacer(width=20), run).servable(target='main')
