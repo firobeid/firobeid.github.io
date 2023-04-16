@@ -453,9 +453,9 @@ random_seed = pn.widgets.IntSlider(name='Random Seed for Random Generated Data (
 button = pn.widgets.Button(name='Get Metrics')
 widgets = pn.WidgetBox(
     pn.panel(text, margin=(0, 20)),
-    file_input,
-    pn.panel('Check if your data has a date column \\n (otherwise keep it empty)'),
+    pn.panel('**Check box if your data has a date column *before uploading the file* \\n (otherwise keep it empty)**'),
     check_date,
+    file_input,
     random_seed,
     pn.panel('\\n'),
     date_selector,
@@ -543,9 +543,10 @@ def run(_):
     except Exception as e:
         return pn.pane.Markdown(f"""{e}""")
     try:
-        df.DATE = pd.to_datetime(df.DATE)
+        df.DATE = pd.to_datetime(df.DATE, format="%Y-%m-%d %H:%M:%S", utc = True)
         # print(pd.to_datetime(df.DATE,utc = True))
         df["MONTHLY"] = df["DATE"].dt.strftime('%Y-%m')
+        print("AAAA")
         df['QUARTERLY'] = pd.PeriodIndex(df.DATE, freq='Q').astype(str)
         df['WEEKLY'] = pd.PeriodIndex(df.DATE, freq='W').astype(str)
     except Exception as e:
