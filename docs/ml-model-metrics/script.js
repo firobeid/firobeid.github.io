@@ -1,4 +1,4 @@
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.21.3/full/pyodide.js");
+importScripts("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
 
 function sendPatch(patch, buffers, msg_id) {
   self.postMessage({
@@ -15,14 +15,27 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'colorama', 'holoviews>=1.15.1', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas', 'scipy', 'scikit-learn', 'tqdm', 'xlsxwriter']
+  const env_spec = ['https://cdn.holoviz.org/panel/0.14.3/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.3/dist/wheels/panel-0.14.3-py3-none-any.whl', 'pyodide-http==0.1.0', 'colorama', 'holoviews>=1.15.4', 'holoviews>=1.15.4', 'hvplot', 'numpy', 'pandas', 'scipy', 'scikit-learn', 'tqdm', 'xlsxwriter']
   for (const pkg of env_spec) {
-    const pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
+    let pkg_name;
+    if (pkg.endsWith('.whl')) {
+      pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
+    } else {
+      pkg_name = pkg
+    }
     self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
-    await self.pyodide.runPythonAsync(`
-      import micropip
-      await micropip.install('${pkg}');
-    `);
+    try {
+      await self.pyodide.runPythonAsync(`
+        import micropip
+        await micropip.install('${pkg}');
+      `);
+    } catch(e) {
+      console.log(e)
+      self.postMessage({
+	type: 'status',
+	msg: `Error while installing ${pkg_name}`
+      });
+    }
   }
   console.log("Packages loaded!");
   self.postMessage({type: 'status', msg: 'Executing code'})
@@ -475,10 +488,16 @@ def get_data():
     global df
     if file_input.value is None:
         np.random.seed(random_seed.value)
-        df = pd.DataFrame({'DATE': pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = 9999+1)), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H"),
-                        'ID': [i for i in range(10000)],
-                        'SCORE':np.random.uniform(size = 10000),
-                        'TARGET': np.random.choice([0,1],10000, p=[0.9,0.1])})
+        try:
+            df = pd.DataFrame({'DATE': pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = 9999)), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H"),
+                            'ID': [i for i in range(10000)],
+                            'SCORE':np.random.uniform(size = 10000),
+                            'TARGET': np.random.choice([0,1],10000, p=[0.9,0.1])})
+        except:
+            df = pd.DataFrame({'DATE': pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = 9999 + 1)), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H"),
+                            'ID': [i for i in range(10000)],
+                            'SCORE':np.random.uniform(size = 10000),
+                            'TARGET': np.random.choice([0,1],10000, p=[0.9,0.1])})            
         # df.to_csv("test_upload.csv")
     else:
         df = BytesIO()
@@ -546,7 +565,7 @@ def run(_):
         df.DATE = pd.to_datetime(df.DATE, format="%Y-%m-%d %H:%M:%S", utc = True)
         # print(pd.to_datetime(df.DATE,utc = True))
         df["MONTHLY"] = df["DATE"].dt.strftime('%Y-%m')
-        print("AAAA")
+        print(f"J - DAYS COUNT: {datetime.datetime.now() - pd.Timestamp('2023-03-06 03:27')}" )
         df['QUARTERLY'] = pd.PeriodIndex(df.DATE, freq='Q').astype(str)
         df['WEEKLY'] = pd.PeriodIndex(df.DATE, freq='W').astype(str)
     except Exception as e:
@@ -803,13 +822,24 @@ pn.Row(pn.Column(widgets), pn.layout.Spacer(width=30), run).servable()
 
 await write_doc()
   `
-  const [docs_json, render_items, root_ids] = await self.pyodide.runPythonAsync(code)
-  self.postMessage({
-    type: 'render',
-    docs_json: docs_json,
-    render_items: render_items,
-    root_ids: root_ids
-  });
+
+  try {
+    const [docs_json, render_items, root_ids] = await self.pyodide.runPythonAsync(code)
+    self.postMessage({
+      type: 'render',
+      docs_json: docs_json,
+      render_items: render_items,
+      root_ids: root_ids
+    })
+  } catch(e) {
+    const traceback = `${e}`
+    const tblines = traceback.split('\n')
+    self.postMessage({
+      type: 'status',
+      msg: tblines[tblines.length-2]
+    });
+    throw e
+  }
 }
 
 self.onmessage = async (event) => {
