@@ -527,9 +527,12 @@ def update_target(event):
         if len(date_column) > 0:
             df = df.iloc[:,date_column].iloc[:,[0]]
             df.columns = ['DATE']
-            # print(type(df.DATE.min()))
+            print(type(df.DATE.min()))
             start, end = pd.Timestamp(df.DATE.min()),  pd.Timestamp(df.DATE.max())
-            date_range_.set_param(value=(start, end), start=start, end=end)
+            try:
+                date_range_.set_param(value=(start, end), start=start, end=end)
+            except:
+                date_range_.set_param(value=(end, start), start=end, end=start)
         else:
             print('Creating synthetic dates')
             synthetic_date = pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = len(df))), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H") #remove len(df) - 1
@@ -741,6 +744,8 @@ def run(_):
     error = pd.DataFrame(np.array([bin_probamean, bin_ymean]).T,columns= ["SCORE_MEAN", "TARGET_MEAN"])
     error_plot = error.hvplot.scatter(x ='SCORE_MEAN', y = 'TARGET_MEAN', width = 800, height = 500, label = "Bin (Score vs Target Mean)", title = 'Model Scores Calibration (--- Perfect Calibration)',
                                                         xlim = (0,1), ylim = (0,1), grid = True, xlabel = 'Bins Mean of Scores', ylabel = 'Bins Mean of Target') *  Slope(slope=1, y_intercept=0,legend = 'Perfect Calibration').opts(color='black', line_dash='dashed')  
+    variable_ = pn.pane.Alert('''### FJ Day Count: \\n%s 
+    '''%(datetime.datetime.now() - pd.Timestamp('2023-03-06 03:27')), alert_type="success")
     return pn.Tabs(
         ('Metrics', pn.Column(
                     pn.Row(intiate, intiate2, intiate3, width = 1200),
@@ -757,6 +762,7 @@ def run(_):
                     '# GAINS TABLE',
                     pn.Row(gains_final_b, gains_final_p, save_csv(pd.concat([gains_final_base, gains_final_prod], axis = 1), 'GAINS_TABLES')),
                     get_xlsx(psi_, pd.concat([auc_b, auc_p], axis = 0), pd.concat([ks_b, ks_p], axis = 0), pd.concat([mean_score_base, mean_score_prod], axis = 0), lift_data, pd.concat([gains_final_base, gains_final_prod], axis = 1)), 
+                    pn.Row(variable_, width = 200),
                              )
         ), #sizing_mode='stretch_width'
         ('Charts', pn.Column(pn.Row(roc_plot.opts(legend_position = 'bottom_right'), error_plot.opts(legend_position = 'top_left')) ,
