@@ -1,4 +1,4 @@
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.21.3/full/pyodide.js");
+importScripts("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
 
 function sendPatch(patch, buffers, msg_id) {
   self.postMessage({
@@ -15,14 +15,27 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'holoviews>=1.15.1', 'hvplot', 'numpy', 'pandas', 'scipy', 'scikit-learn']
+  const env_spec = ['param<2.0','https://cdn.holoviz.org/panel/0.14.4/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.4/dist/wheels/panel-0.14.4-py3-none-any.whl', 'pyodide-http==0.1.0', 'github', 'holoviews>=1.15.4', 'https://files.pythonhosted.org/packages/1c/4a/87bf45985ba1fa9614ca9da82e4d8b91e25952da4eb72239ddb8bc4d07f9/hvplot-0.8.4-py2.py3-none-any.whl', 'numpy', 'pandas', 'scipy', 'scikit-learn']
   for (const pkg of env_spec) {
-    const pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
+    let pkg_name;
+    if (pkg.endsWith('.whl')) {
+      pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
+    } else {
+      pkg_name = pkg
+    }
     self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
-    await self.pyodide.runPythonAsync(`
-      import micropip
-      await micropip.install('${pkg}');
-    `);
+    try {
+      await self.pyodide.runPythonAsync(`
+        import micropip
+        await micropip.install('${pkg}');
+      `);
+    } catch(e) {
+      console.log(e)
+      self.postMessage({
+	type: 'status',
+	msg: `Error while installing ${pkg_name}`
+      });
+    }
   }
   console.log("Packages loaded!");
   self.postMessage({type: 'status', msg: 'Executing code'})
@@ -774,10 +787,10 @@ def get_real_test_timeseries():
     # return predictions
 
 def github_cred():
-    # from github import Github
+    from github import Github
     repo_name = 'firobeid/TimeSeriesCompetitionTracker'
     # using an access token
-    g = Github("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")
+    g = Github("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")
     return g.get_repo(repo_name)
 
 def leaderboard_ts():
@@ -1178,13 +1191,24 @@ pn.Column(pn.Row(title), tabs, pn.Row(pn.pane.Alert("Enjoy some background class
 
 await write_doc()
   `
-  const [docs_json, render_items, root_ids] = await self.pyodide.runPythonAsync(code)
-  self.postMessage({
-    type: 'render',
-    docs_json: docs_json,
-    render_items: render_items,
-    root_ids: root_ids
-  });
+
+  try {
+    const [docs_json, render_items, root_ids] = await self.pyodide.runPythonAsync(code)
+    self.postMessage({
+      type: 'render',
+      docs_json: docs_json,
+      render_items: render_items,
+      root_ids: root_ids
+    })
+  } catch(e) {
+    const traceback = `${e}`
+    const tblines = traceback.split('\n')
+    self.postMessage({
+      type: 'status',
+      msg: tblines[tblines.length-2]
+    });
+    throw e
+  }
 }
 
 self.onmessage = async (event) => {
