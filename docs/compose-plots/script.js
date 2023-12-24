@@ -1,4 +1,4 @@
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
+importScripts("https://cdn.jsdelivr.net/pyodide/v0.21.3/full/pyodide.js");
 
 function sendPatch(patch, buffers, msg_id) {
   self.postMessage({
@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['param<2.0','https://cdn.holoviz.org/panel/0.14.4/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.4/dist/wheels/panel-0.14.4-py3-none-any.whl', 'pyodide-http==0.1.0', 'github', 'holoviews>=1.15.4', 'https://files.pythonhosted.org/packages/1c/4a/87bf45985ba1fa9614ca9da82e4d8b91e25952da4eb72239ddb8bc4d07f9/hvplot-0.8.4-py2.py3-none-any.whl', 'numpy', 'pandas', 'scipy', 'scikit-learn']
+  const env_spec = ['param==1.12.3', 'panel==0.14.3','holoviews==1.15.3', 'numpy', 'pandas', 'scipy', 'scikit-learn','hvplot==0.8.2']
   for (const pkg of env_spec) {
     let pkg_name;
     if (pkg.endsWith('.whl')) {
