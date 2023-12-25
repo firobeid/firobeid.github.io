@@ -1,4 +1,4 @@
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
+importScripts("https://cdn.jsdelivr.net/pyodide/v0.21.3/full/pyodide.js");
 
 function sendPatch(patch, buffers, msg_id) {
   self.postMessage({
@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['panel==0.14.3', 'holoviews==1.15.4', 'colorama==0.4.6',  'hvplot==0.8.2', 'numpy', 'pandas', 'scipy', 'scikit-learn', 'tqdm', 'xlsxwriter','panel==0.14.3']
+  const env_spec = ['param==1.12.3', 'panel==0.14.3', 'holoviews==1.15.3', 'colorama==0.4.6',  'hvplot==0.8.2', 'numpy', 'pandas', 'scipy', 'scikit-learn', 'tqdm', 'xlsxwriter','panel==0.14.3']
   for (const pkg of env_spec) {
     let pkg_name;
     if (pkg.endsWith('.whl')) {
@@ -27,7 +27,7 @@ async function startApplication() {
     try {
       await self.pyodide.runPythonAsync(`
         import micropip
-        await micropip.install('${pkg}', keep_going = True);
+        await micropip.install('${pkg}');
       `);
     } catch(e) {
       console.log(e)
@@ -494,10 +494,16 @@ def get_data():
                             'SCORE':np.random.uniform(size = 10000),
                             'TARGET': np.random.choice([0,1],10000, p=[0.9,0.1])})
         except:
-            df = pd.DataFrame({'DATE': pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = 9999 + 1)), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H"),
-                            'ID': [i for i in range(10000)],
-                            'SCORE':np.random.uniform(size = 10000),
-                            'TARGET': np.random.choice([0,1],10000, p=[0.9,0.1])})            
+            try:
+                df = pd.DataFrame({'DATE': pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = 9999 + 1)), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H"),
+                                'ID': [i for i in range(10000)],
+                                'SCORE':np.random.uniform(size = 10000),
+                                'TARGET': np.random.choice([0,1],10000, p=[0.9,0.1])})  
+            except:
+                df = pd.DataFrame({'DATE': pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = 9999 - 1)), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H"),
+                                'ID': [i for i in range(10000)],
+                                'SCORE':np.random.uniform(size = 10000),
+                                'TARGET': np.random.choice([0,1],10000, p=[0.9,0.1])})            
         # df.to_csv("test_upload.csv")
     else:
         df = BytesIO()

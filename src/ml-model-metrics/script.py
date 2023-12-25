@@ -445,10 +445,16 @@ def get_data():
                             'SCORE':np.random.uniform(size = 10000),
                             'TARGET': np.random.choice([0,1],10000, p=[0.9,0.1])})
         except:
-            df = pd.DataFrame({'DATE': pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = 9999 + 1)), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H"),
-                            'ID': [i for i in range(10000)],
-                            'SCORE':np.random.uniform(size = 10000),
-                            'TARGET': np.random.choice([0,1],10000, p=[0.9,0.1])})            
+            try:
+                df = pd.DataFrame({'DATE': pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = 9999 + 1)), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H"),
+                                'ID': [i for i in range(10000)],
+                                'SCORE':np.random.uniform(size = 10000),
+                                'TARGET': np.random.choice([0,1],10000, p=[0.9,0.1])})  
+            except:
+                df = pd.DataFrame({'DATE': pd.date_range(start = (datetime.datetime.today() - pd.DateOffset(hours = 9999 - 1)), end = datetime.datetime.today(), tz = "US/Eastern", freq = "H"),
+                                'ID': [i for i in range(10000)],
+                                'SCORE':np.random.uniform(size = 10000),
+                                'TARGET': np.random.choice([0,1],10000, p=[0.9,0.1])})            
         # df.to_csv("test_upload.csv")
     else:
         df = BytesIO()
